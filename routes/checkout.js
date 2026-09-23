@@ -274,14 +274,16 @@ router.post('/', async (req, res) => {
           db.run('UPDATE Users SET email = ? WHERE id = ?', [cleanEmail, userId]);
         }
 
-        // Auto-login to session
-        req.session.user = {
-          id: existingUser.id,
-          name: customer_name.trim() || existingUser.name,
-          phone: cleanPhone,
-          email: cleanEmail || existingUser.email,
-          role: existingUser.role || 'customer'
-        };
+        // Auto-login to session as customer (strictly customer role, never elevate to admin via checkout)
+        if (existingUser.role !== 'admin') {
+          req.session.user = {
+            id: existingUser.id,
+            name: customer_name.trim() || existingUser.name,
+            phone: cleanPhone,
+            email: cleanEmail || existingUser.email,
+            role: 'customer'
+          };
+        }
 
         proceedWithDeliveryCalc(userId);
       } else {

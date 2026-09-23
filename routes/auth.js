@@ -160,13 +160,8 @@ router.post('/login', (req, res) => {
             phone: user.phone || null,
             role: 'admin'
           };
-          req.session.user = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone || null,
-            role: 'admin'
-          };
+          // Segregate admin from customer session completely
+          delete req.session.user;
           const dest = (redirect && redirect.startsWith('/admin')) ? redirect : '/admin';
           return res.redirect(dest);
         }
@@ -177,8 +172,9 @@ router.post('/login', (req, res) => {
           name: user.name,
           email: user.email,
           phone: user.phone || null,
-          role: user.role
+          role: 'customer'
         };
+        delete req.session.adminUser;
 
         let safeRedirect = redirect;
         if (safeRedirect && safeRedirect.startsWith('/admin')) {

@@ -28,21 +28,18 @@
         </span>
       </a>
 
-      <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+      <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.role !== 'admin') { %>
         <a href="/profile" class="px-3 py-1.5 rounded-full text-[11px] font-semibold text-stone-700 hover:text-brand-plum hover:bg-white/60 transition hidden sm:inline-flex items-center gap-1.5" title="My Profile & Orders">
           <span class="w-4 h-4 rounded-full bg-purple-100 text-purple-900 flex items-center justify-center text-[9px] font-bold"><%= currentUser.name.charAt(0).toUpperCase() %></span>
           <span>Orders</span>
         </a>
-        <% if (currentUser.role === 'admin' || (typeof adminUser !== 'undefined' && adminUser)) { %>
-          <a href="/admin" class="btn-liquid btn-liquid-sm hidden sm:inline-flex">Admin</a>
-        <% } %>
-        <a href="/auth/logout" class="px-3 py-1.5 rounded-full text-[11px] font-medium text-stone-500 hover:text-rose-600 transition hidden sm:inline-flex">Logout</a>
+        <a href="/auth/logout" class="px-3 py-1.5 rounded-full text-[11px] font-medium text-stone-500 hover:text-rose-600 transition hidden sm:inline-flex">Sign Out</a>
       <% } else { %>
         <a href="/auth/login" class="btn-liquid btn-liquid-sm hidden sm:inline-flex">Sign In</a>
       <% } %>
       
-      <a href="<%= (typeof currentUser !== 'undefined' && currentUser) ? '/profile' : '/auth/login' %>" class="px-3.5 py-1.5 bg-brand-dark text-white rounded-full text-[11px] font-bold tracking-wider transition hover:bg-brand-plum">
-        <%= (typeof currentUser !== 'undefined' && currentUser) ? 'Account' : 'Join' %>
+      <a href="<%= (typeof currentUser !== 'undefined' && currentUser && currentUser.role !== 'admin') ? '/profile' : '/auth/login' %>" class="px-3.5 py-1.5 bg-brand-dark text-white rounded-full text-[11px] font-bold tracking-wider transition hover:bg-brand-plum">
+        <%= (typeof currentUser !== 'undefined' && currentUser && currentUser.role !== 'admin') ? 'Account' : 'Join' %>
       </a>
 
       <!-- Mobile Menu Button -->
@@ -65,12 +62,9 @@
     </a>
     <a href="/#story" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-stone-600 hover:bg-white/40 transition">About Atelier</a>
     <div class="pt-2 border-t border-stone-200/40 space-y-1">
-      <% if (typeof currentUser !== 'undefined' && currentUser) { %>
-        <a href="/profile" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-brand-dark bg-purple-50/70">My Profile & Orders</a>
-        <% if (currentUser.role === 'admin' || (typeof adminUser !== 'undefined' && adminUser)) { %>
-          <a href="/admin" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-brand-plum">Admin Dashboard</a>
-        <% } %>
-        <a href="/auth/logout" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500">Logout (<%= currentUser.name %>)</a>
+      <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.role !== 'admin') { %>
+        <a href="/profile" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-brand-dark bg-purple-50/70">My Profile &amp; Orders</a>
+        <a href="/auth/logout" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500">Sign Out</a>
       <% } else { %>
         <a href="/auth/login" class="block px-3 py-2.5 rounded-lg text-sm font-bold text-brand-dark bg-brand-soft">Sign In</a>
         <a href="/auth/signup" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-stone-600">Create Account</a>

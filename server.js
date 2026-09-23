@@ -12,6 +12,16 @@ const PORT = process.env.PORT || 3000;
 // Trust reverse proxy (essential for Vercel and secure cookies)
 app.set('trust proxy', 1);
 
+// Security hardening
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
