@@ -1,8 +1,25 @@
+const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const path = require('path');
 
-const dbPath = path.resolve(__dirname, '../database.sqlite');
+const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+let dbPath = path.resolve(__dirname, '../database.sqlite');
+
+if (isServerless) {
+  const tmpDbPath = path.join('/tmp', 'database.sqlite');
+  try {
+    if (!fs.existsSync(tmpDbPath)) {
+      if (fs.existsSync(dbPath)) {
+        fs.copyFileSync(dbPath, tmpDbPath);
+      }
+    }
+    dbPath = tmpDbPath;
+  } catch (err) {
+    console.error('❌ Error initializing database in /tmp:', err.message);
+  }
+}
+
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) console.error('❌ DB connection error:', err.message);
   else console.log('✨ Connected to SQLite:', dbPath);

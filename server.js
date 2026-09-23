@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const { setLocals } = require('./middleware/auth');
 
 // Initialize database on boot
@@ -9,20 +9,37 @@ require('./database/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust reverse proxy (essential for Vercel and secure cookies)
+app.set('trust proxy', 1);
+
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
-app.use(session({
-  secret: 'bunonmela-luxury-secret-2026',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    httpOnly: true
-  }
+// Stateless cookie-session: preserves sessions across serverless invocations
+app.use(cookieSession({
+  name: 'bunonmela_session',
+  keys: [process.env.SESSION_SECRET || 'bunonmela-luxury-secret-2026', 'bunonmela-luxury-key-alt'],
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  sameSite: 'lax',
+  httpOnly: true
 }));
+
+// Express-session compatibility helpers for cookie-session
+app.use((req, res, next) => {
+  if (req.session) {
+    if (!req.session.save) {
+      req.session.save = (cb) => { if (cb) cb(); };
+    }
+    if (!req.session.destroy) {
+      req.session.destroy = (cb) => {
+        req.session = null;
+        if (cb) cb();
+      };
+    }
+  }
+  next();
+});
 
 // Make currentUser available in all views
 app.use(setLocals);
@@ -58,11 +75,15 @@ app.use((err, req, res, next) => {
   res.status(500).send('Internal Server Error');
 });
 
-app.listen(PORT, () => {
-  console.log('════════════════════════════════════════════');
-  console.log(`💎 BUNONMELA v2.0 — LUXURY BOUTIQUE`);
-  console.log(`🌐 Storefront:  http://localhost:${PORT}`);
-  console.log(`👑 Admin:       http://localhost:${PORT}/admin`);
-  console.log(`🔐 Login:       http://localhost:${PORT}/auth/login`);
-  console.log('════════════════════════════════════════════');
-});
+if (require.main === module || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log('════════════════════════════════════════════');
+    console.log(`💎 BUNONMELA v2.0 — LUXURY BOUTIQUE`);
+    console.log(`🌐 Storefront:  http://localhost:${PORT}`);
+    console.log(`👑 Admin:       http://localhost:${PORT}/admin`);
+    console.log(`🔐 Login:       http://localhost:${PORT}/auth/login`);
+    console.log('════════════════════════════════════════════');
+  });
+}
+
+module.exports = app;

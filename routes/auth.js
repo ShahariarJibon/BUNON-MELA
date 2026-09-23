@@ -243,7 +243,7 @@ router.post('/signup', async (req, res) => {
   // Check if email exists in SQLite
   db.get('SELECT id FROM Users WHERE email = ?', [email.trim().toLowerCase()], async (err, existing) => {
     if (existing) {
-      return renderError('An account with this email already exists.');
+      return renderError('An account with this email already exists. Please sign in with your password.');
     }
 
     try {
@@ -277,9 +277,14 @@ router.post('/signup', async (req, res) => {
 
 // GET /auth/logout
 router.get('/logout', (req, res) => {
-  req.session.destroy(() => {
+  if (req.session && typeof req.session.destroy === 'function') {
+    req.session.destroy(() => {
+      res.redirect('/');
+    });
+  } else {
+    req.session = null;
     res.redirect('/');
-  });
+  }
 });
 
 module.exports = router;
