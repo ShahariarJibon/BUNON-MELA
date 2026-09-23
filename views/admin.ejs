@@ -1,0 +1,1630 @@
+<%- include('partials/header') %>
+<%- include('partials/admin-nav') %>
+
+<main class="admin-main flex-grow bg-slate-100 py-8 min-h-screen transition-colors duration-200">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
+    
+    <!-- Dashboard Top Bar -->
+    <div id="dashboard-top" class="admin-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 bg-white p-6 sm:p-7 rounded-2xl border border-stone-300 shadow-sm transition-colors duration-200">
+      <div>
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-purple-100 text-purple-900 border border-purple-300 admin-badge">
+          Admin Portal v2.4
+        </span>
+        <h1 class="admin-heading font-heading text-xl sm:text-2xl font-bold text-stone-900 mt-1.5">Atelier Dashboard</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Storefront button in dashboard home section -->
+        <a href="/" target="_blank" class="btn-liquid btn-liquid-sm flex items-center gap-1.5 px-4 py-2" style="background:#ffffff; color:#3B0764; border: 1.5px solid #cbd5e1;">
+          <span>View Storefront</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+        <a href="#add-product-section" class="btn-liquid btn-liquid-sm px-4 py-2" style="background:#3B0764;color:#fff;">+ Add Product</a>
+      </div>
+    </div>
+
+    <!-- Metrics Cards (Showing Orders, Products, Taka ৳) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="admin-card bg-white p-5 rounded-xl border border-stone-300 shadow-sm transition-colors duration-200">
+        <span class="admin-subtext text-[10px] font-bold uppercase tracking-wider text-stone-600 block">Total Orders</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span class="admin-heading font-heading text-2xl sm:text-3xl font-bold text-stone-900"><%= (typeof stats.orderCount !== 'undefined') ? stats.orderCount : (typeof orders !== 'undefined' ? orders.length : 0) %></span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+            <%= (typeof stats.pendingOrderCount !== 'undefined') ? stats.pendingOrderCount : 0 %> Pending
+          </span>
+        </div>
+      </div>
+      <div class="admin-card bg-white p-5 rounded-xl border border-stone-300 shadow-sm transition-colors duration-200">
+        <span class="admin-subtext text-[10px] font-bold uppercase tracking-wider text-stone-600 block">Catalog Valuation</span>
+        <span class="admin-heading font-heading text-2xl sm:text-3xl font-bold text-stone-900 block mt-1">৳<%= Number(stats.totalValue).toLocaleString() %></span>
+      </div>
+      <div class="admin-card bg-white p-5 rounded-xl border border-stone-300 shadow-sm transition-colors duration-200">
+        <span class="admin-subtext text-[10px] font-bold uppercase tracking-wider text-stone-600 block">Registered Customers</span>
+        <span class="admin-heading font-heading text-2xl sm:text-3xl font-bold text-stone-900 block mt-1"><%= stats.customerCount %></span>
+      </div>
+      <div class="admin-card bg-white p-5 rounded-xl border border-stone-300 shadow-sm transition-colors duration-200">
+        <span class="admin-subtext text-[10px] font-bold uppercase tracking-wider text-stone-600 block">Currency & Products</span>
+        <div class="flex items-center justify-between mt-2">
+          <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>BDT (৳ Taka)
+          </span>
+          <span class="product-count-badge text-xs font-bold font-mono px-2 py-0.5 rounded-md"><%= stats.productCount %> Pieces</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         PROMOTIONAL COUPONS & FREE DELIVERY CODES
+         Set multiple coupon codes that waive delivery fee
+         ═══════════════════════════════════════════ -->
+    <div id="coupons-section" class="admin-card bg-white rounded-2xl border border-stone-300 shadow-sm p-5 sm:p-6 transition-colors duration-200">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/60 text-purple-900 dark:text-purple-300 flex items-center justify-center font-bold text-sm shadow-xs">
+              🎟️
+            </span>
+            <h2 class="admin-heading font-heading text-base sm:text-lg font-bold text-stone-900">
+              Promotional Coupons & Free Delivery (<%= (typeof coupons !== 'undefined') ? coupons.length : 0 %>)
+            </h2>
+          </div>
+          <p class="admin-subtext text-xs text-stone-600 mt-1">
+            Set multiple active coupon codes. If a customer enters any matching code during checkout, their delivery charge (৳70 or ৳160) is completely waived for free delivery.
+          </p>
+        </div>
+
+        <!-- Add Coupon Form (AJAX without page reload or signing out) -->
+        <form id="addCouponForm" class="flex items-center gap-2 shrink-0">
+          <div class="relative">
+            <input
+              id="newCouponInput"
+              name="code"
+              type="text"
+              required
+              placeholder="e.g. FREESHIP"
+              class="admin-input uppercase font-mono tracking-wider text-xs font-bold py-2 px-3 rounded-xl border border-stone-300 focus:outline-none focus:border-purple-600 bg-stone-50 dark:bg-stone-800"
+            >
+          </div>
+          <button
+            type="submit"
+            id="btnAddCoupon"
+            class="btn-liquid btn-liquid-sm px-4 py-2 text-xs font-bold text-white shadow-sm flex items-center gap-1.5"
+            style="background: linear-gradient(135deg, #3B0764 0%, #7E22CE 100%);"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Add Coupon</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Active Coupons List Container -->
+      <div class="pt-4">
+        <div id="couponsChipsContainer" class="flex flex-wrap gap-2.5 items-center">
+          <% if (typeof coupons !== 'undefined' && coupons.length > 0) { %>
+            <% coupons.forEach(function(coupon) { %>
+              <div class="coupon-chip inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 shadow-2xs group transition hover:border-purple-400" data-coupon-id="<%= coupon.id %>">
+                <span class="font-mono font-bold text-xs text-purple-950 dark:text-purple-200 tracking-wider">
+                  <%= coupon.code %>
+                </span>
+                <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  Free Delivery
+                </span>
+                <button
+                  type="button"
+                  class="btn-delete-coupon text-stone-400 hover:text-rose-600 transition text-xs font-bold p-0.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                  data-id="<%= coupon.id %>"
+                  data-code="<%= coupon.code %>"
+                  title="Remove coupon code"
+                >
+                  &times;
+                </button>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div id="noCouponsNotice" class="p-4 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 text-center text-xs text-stone-500 w-full">
+              No coupon codes active yet. Type a code above (like <strong class="font-mono text-purple-700 dark:text-purple-300">FREESHIP</strong>) and click <strong>Add Coupon</strong> to grant customers free delivery.
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         CUSTOMER ORDERS & MANUAL VERIFICATION SECTION
+         Review orders, check bKash/Nagad TrxIDs, update statuses
+         ═══════════════════════════════════════════ -->
+    <div id="orders-section" class="admin-card bg-white rounded-2xl border border-stone-300 shadow-sm overflow-hidden transition-colors duration-200">
+      <div class="p-5 sm:p-6 border-b border-stone-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="admin-heading font-heading text-base sm:text-lg font-bold text-stone-900">Customer Orders (<%= (typeof orders !== 'undefined') ? orders.length : 0 %>)</h2>
+            <% const pendingNum = (typeof orders !== 'undefined') ? orders.filter(o => o.status === 'Pending').length : 0; %>
+            <% if (pendingNum > 0) { %>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
+                <%= pendingNum %> Awaiting Manual Verification
+              </span>
+            <% } %>
+          </div>
+          <p class="admin-subtext text-xs text-stone-600 mt-0.5">Verify recipient coordinates, payment methods, and Transaction IDs (TrxID) for mobile banking.</p>
+        </div>
+      </div>
+
+      <% if (typeof orders !== 'undefined' && orders.length > 0) { %>
+        <!-- ══ MOBILE: Order Cards (visible < md) ══ -->
+        <div class="md:hidden divide-y divide-stone-200 admin-mobile-cards">
+          <% orders.forEach(function(order) { %>
+            <div class="admin-mobile-order-card p-4 space-y-3">
+              <!-- Top Row: Order # + Status Badge -->
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="font-mono font-bold text-stone-900 text-xs admin-heading block"><%= order.order_number %></span>
+                  <span class="text-[10px] text-stone-500 font-sans">
+                    <%= new Date(order.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                  </span>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 <%= order.status === 'Pending' ? 'bg-amber-100 text-amber-900 border border-amber-300' : (order.status === 'Confirmed' ? 'bg-indigo-100 text-indigo-900 border border-indigo-300' : (order.status === 'Delivered' ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : (order.status === 'Dispatched' ? 'bg-blue-100 text-blue-900 border border-blue-300' : 'bg-stone-100 text-stone-800 border border-stone-300'))) %>">
+                  <%= order.status === 'Pending' ? '⏳' : (order.status === 'Confirmed' ? '✅' : (order.status === 'Dispatched' ? '🚚' : (order.status === 'Delivered' ? '💎' : '✕'))) %> <%= order.status %>
+                </span>
+              </div>
+
+              <!-- Customer Info -->
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-900 font-bold text-xs shrink-0">
+                  <%= order.customer_name ? order.customer_name.charAt(0).toUpperCase() : '?' %>
+                </div>
+                <div class="min-w-0">
+                  <span class="font-bold text-stone-900 text-xs block admin-heading truncate"><%= order.customer_name %></span>
+                  <span class="text-[11px] text-stone-600 font-mono">+88 <%= order.customer_phone %></span>
+                </div>
+              </div>
+
+              <!-- Delivery Address -->
+              <div class="bg-stone-50 rounded-lg p-2.5 admin-mobile-info-block">
+                <span class="text-[9px] uppercase tracking-wider text-stone-500 font-bold block mb-0.5">Delivery</span>
+                <span class="order-location-addr text-xs font-semibold text-stone-900 block"><%= order.delivery_address %></span>
+                <span class="order-location-region text-[11px] font-bold mt-0.5 block"><%= order.upazila %>, <%= order.district %></span>
+              </div>
+
+              <!-- Payment + Total Row -->
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <div class="space-y-1">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1.5 <%= order.payment_method === 'Cash on Delivery' ? 'bg-emerald-100 text-emerald-900' : 'bg-purple-100 text-purple-900' %>">
+                    <% if (order.payment_method === 'bKash') { %>
+                      <img src="/images/payments/bkash.png" alt="bKash" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                    <% } else if (order.payment_method === 'Nagad') { %>
+                      <img src="/images/payments/nagad.jpg" alt="Nagad" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                    <% } else if (order.payment_method === 'Online Bank Transfer' || (order.payment_method && order.payment_method.includes('Bank'))) { %>
+                      <img src="/images/payments/banking.jpg" alt="Banking" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                    <% } else { %>
+                      <img src="/images/payments/COD.jpg" alt="COD" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                    <% } %>
+                    <span><%= order.payment_method %></span>
+                  </span>
+                  <% if (order.transaction_id) { %>
+                    <div class="flex items-center gap-1 text-[10px] font-mono">
+                      <span class="text-stone-500">TrxID:</span>
+                      <span class="font-bold text-purple-950 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded select-all"><%= order.transaction_id %></span>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="text-right">
+                  <span class="font-heading font-bold text-stone-900 text-lg admin-heading block">৳<%= Number(order.total_amount).toLocaleString() %></span>
+                  <div class="text-[10px] text-stone-500 font-sans mt-0.5">
+                    Delivery: <strong class="text-stone-800 dark:text-stone-200">৳<%= order.delivery_charge || 0 %></strong>
+                    <% if (order.coupon_code) { %>
+                      <span class="ml-1 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 font-mono">🎟️ <%= order.coupon_code %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Status Change -->
+              <form action="/admin/orders/status/<%= order.id %>" method="POST" class="pt-2 border-t border-stone-200 admin-mobile-status-form">
+                <label class="text-[9px] uppercase tracking-wider text-stone-500 font-bold block mb-1.5">Update Status</label>
+                <select name="status" onchange="this.form.submit()" class="w-full text-xs font-bold py-2.5 px-3 rounded-xl border cursor-pointer focus:outline-none transition shadow-sm admin-mobile-select <%= order.status === 'Pending' ? 'bg-amber-50 text-amber-900 border-amber-300' : ((order.status === 'Approved' || order.status === 'Confirmed') ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : (order.status === 'Delivered' ? 'bg-purple-50 text-purple-900 border-purple-300' : 'bg-stone-50 text-stone-800 border-stone-300')) %>">
+                  <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>⏳ Pending</option>
+                  <option value="Approved" <%= (order.status === 'Approved' || order.status === 'Confirmed') ? 'selected' : '' %>>✅ Approved</option>
+                  <option value="Dispatched" <%= order.status === 'Dispatched' ? 'selected' : '' %>>🚚 Dispatched</option>
+                  <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>💎 Delivered</option>
+                  <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>✕ Cancelled</option>
+                </select>
+              </form>
+            </div>
+          <% }); %>
+        </div>
+
+        <!-- ══ DESKTOP: Order Table (visible md+) ══ -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left admin-table">
+            <thead>
+              <tr class="bg-stone-100 text-[11px] uppercase tracking-wider text-stone-700 font-bold border-b border-stone-300 admin-thead-tr">
+                <th class="py-3.5 px-4">Order Ref</th>
+                <th class="py-3.5 px-4">Recipient</th>
+                <th class="py-3.5 px-4">Delivery Coordinates</th>
+                <th class="py-3.5 px-4">Payment & TrxID</th>
+                <th class="py-3.5 px-4">Total (৳)</th>
+                <th class="py-3.5 px-4 text-right">Verification Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200 text-xs admin-tbody">
+              <% orders.forEach(function(order) { %>
+                <tr class="hover:bg-purple-50/40 transition admin-tr">
+                  <td class="py-3.5 px-4 font-mono font-bold text-stone-900 text-xs admin-heading">
+                    <%= order.order_number %>
+                    <span class="block text-[10px] font-normal text-stone-500 dark:text-stone-400 font-sans">
+                      <%= new Date(order.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) %>
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="font-bold text-stone-900 block admin-heading"><%= order.customer_name %></span>
+                    <span class="text-[11px] text-stone-600 dark:text-stone-300 font-mono">+88 <%= order.customer_phone %></span>
+                  </td>
+                  <td class="py-3.5 px-4 max-w-xs">
+                    <span class="order-location-addr font-semibold text-stone-900 block truncate text-xs" title="<%= order.delivery_address %>"><%= order.delivery_address %></span>
+                    <span class="order-location-region text-[11px] font-bold block mt-0.5"><%= order.upazila %>, <%= order.district %></span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <div class="space-y-1">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1.5 <%= order.payment_method === 'Cash on Delivery' ? 'bg-emerald-100 text-emerald-900' : 'bg-purple-100 text-purple-900' %>">
+                        <% if (order.payment_method === 'bKash') { %>
+                          <img src="/images/payments/bkash.png" alt="bKash" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                        <% } else if (order.payment_method === 'Nagad') { %>
+                          <img src="/images/payments/nagad.jpg" alt="Nagad" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                        <% } else if (order.payment_method === 'Online Bank Transfer' || (order.payment_method && order.payment_method.includes('Bank'))) { %>
+                          <img src="/images/payments/banking.jpg" alt="Banking" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                        <% } else { %>
+                          <img src="/images/payments/COD.jpg" alt="COD" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                        <% } %>
+                        <span><%= order.payment_method %></span>
+                      </span>
+                      <% if (order.transaction_id) { %>
+                        <div class="flex items-center gap-1 text-[10px] font-mono">
+                          <span class="text-stone-500 dark:text-stone-400">TrxID:</span>
+                          <span class="font-bold text-purple-950 dark:text-purple-200 bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-800 px-1.5 py-0.2 rounded select-all"><%= order.transaction_id %></span>
+                        </div>
+                      <% } %>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-heading font-bold text-stone-900 text-sm admin-heading">
+                    ৳<%= Number(order.total_amount).toLocaleString() %>
+                    <div class="text-[10px] font-sans font-normal text-stone-500 mt-0.5">
+                      Delivery: <strong class="text-stone-700 dark:text-stone-300">৳<%= order.delivery_charge || 0 %></strong>
+                      <% if (order.coupon_code) { %>
+                        <span class="block text-[9px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.2 rounded font-mono inline-block mt-0.5">
+                          🎟️ <%= order.coupon_code %>
+                        </span>
+                      <% } %>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <form action="/admin/orders/status/<%= order.id %>" method="POST" class="inline-flex items-center gap-1.5">
+                      <select name="status" onchange="this.form.submit()" class="text-xs font-bold py-1 px-2.5 rounded-lg border cursor-pointer focus:outline-none transition shadow-sm <%= order.status === 'Pending' ? 'bg-amber-50 text-amber-900 border-amber-300' : ((order.status === 'Approved' || order.status === 'Confirmed') ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : (order.status === 'Delivered' ? 'bg-purple-50 text-purple-900 border-purple-300' : 'bg-stone-50 text-stone-800 border-stone-300')) %>">
+                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>⏳ Pending</option>
+                        <option value="Approved" <%= (order.status === 'Approved' || order.status === 'Confirmed') ? 'selected' : '' %>>✅ Approved</option>
+                        <option value="Dispatched" <%= order.status === 'Dispatched' ? 'selected' : '' %>>🚚 Dispatched</option>
+                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>💎 Delivered</option>
+                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>✕ Cancelled</option>
+                      </select>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="p-8 text-center admin-subtext text-xs text-stone-500">
+          No customer orders placed yet. Orders submitted through checkout will appear here for manual verification.
+        </div>
+      <% } %>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         DEDICATED CATEGORY MANAGEMENT SECTION
+         Where admin can add or remove categories cleanly
+         ═══════════════════════════════════════════ -->
+    <div id="categories-section" class="admin-card bg-white p-4 sm:p-6 md:p-7 rounded-2xl border border-stone-300 shadow-sm transition-colors duration-200">
+      <div class="flex flex-col gap-4 mb-5 pb-4 border-b border-stone-200">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="admin-heading font-heading text-base sm:text-lg font-bold text-stone-900">Category Manager</h2>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-300">
+                <%= categories.length %> Active
+              </span>
+            </div>
+            <p class="admin-subtext text-xs text-stone-600 mt-0.5">Manage the available categories for your boutique collections (Decorated Bags, Parts, Nose Pin, Hair Clip, etc.).</p>
+          </div>
+        </div>
+
+        <!-- Add Category Form (stacks vertically on mobile) -->
+        <form id="addCategoryForm" action="/admin/categories/add" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <input
+            id="newCategoryInput"
+            name="name"
+            required
+            placeholder="New category name..."
+            class="input-luxury admin-input text-sm py-2.5 px-3 flex-1 sm:max-w-[14rem]"
+          >
+          <button type="submit" class="btn-liquid px-4 py-2.5 sm:py-2 text-xs font-bold shrink-0 shadow-sm" style="background:#3B0764;color:#fff;">
+            + Add Category
+          </button>
+        </form>
+      </div>
+
+      <!-- Active Categories Pill Tags with Delete Option -->
+      <div id="categoryPillsList" class="flex flex-wrap gap-2">
+        <% categories.forEach(function(cat) { %>
+          <div class="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-purple-50 border border-purple-200/90 text-purple-950 text-xs font-semibold shadow-sm admin-pill">
+            <span><%= cat.name %></span>
+            <form id="delete-cat-form-<%= cat.id %>" action="/admin/categories/delete/<%= cat.id %>" method="POST" class="inline">
+              <button type="button" class="btn-delete-category w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-purple-200/80 hover:bg-rose-500 hover:text-white text-purple-800 transition flex items-center justify-center text-[10px]" data-id="<%= cat.id %>" data-name="<%= cat.name %>" title="Remove category">
+                ✕
+              </button>
+            </form>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Add Product Form Section (Clean Category Select Dropdown) -->
+    <div id="add-product-section" class="admin-card bg-white p-4 sm:p-6 md:p-7 rounded-2xl border border-stone-300 shadow-sm transition-colors duration-200">
+      <div class="mb-5">
+        <h2 class="admin-heading font-heading text-base sm:text-lg font-bold text-stone-900">Add New Boutique Creation</h2>
+        <p class="admin-subtext text-xs text-stone-600 mt-0.5">Select a category from the Category Manager above, set price in Bangladeshi Taka (৳), and add photo.</p>
+      </div>
+
+      <form action="/admin/products/add" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        <!-- Title -->
+        <div class="md:col-span-1">
+          <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1.5">Product Title *</label>
+          <input name="title" required class="input-luxury admin-input text-sm py-2.5" placeholder="e.g. Royal Emerald Velvet Clutch">
+        </div>
+
+        <!-- Clean Category Select Dropdown -->
+        <div class="md:col-span-1">
+          <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1.5">Category *</label>
+          <select name="category" required class="input-luxury admin-input text-sm py-2.5">
+            <% categories.forEach(function(cat) { %>
+              <option value="<%= cat.name %>"><%= cat.name %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <!-- Price in Taka -->
+        <div class="md:col-span-1">
+          <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1.5">Price (৳ Taka BDT) *</label>
+          <input name="price" type="number" step="1" required class="input-luxury admin-input text-sm py-2.5" placeholder="35000">
+        </div>
+
+        <!-- Description -->
+        <div class="md:col-span-3">
+          <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1.5">Description & Artisan Craftsmanship</label>
+          <textarea name="description" rows="3" class="input-luxury admin-input text-sm" placeholder="Handcrafted with pure metallic embroidery, semi-precious beads, and pure silk lining..."></textarea>
+        </div>
+
+        <!-- Image Upload or URL -->
+        <div class="md:col-span-2">
+          <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1.5">Product Image</label>
+          <div class="flex flex-col gap-2">
+            <input name="image" type="file" accept="image/*" class="admin-subtext text-xs text-stone-600 file:mr-2 file:py-2 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-purple-100 file:text-purple-900 hover:file:bg-purple-200">
+            <input name="custom_image_url" class="input-luxury admin-input text-xs py-2.5" placeholder="Or paste image URL...">
+          </div>
+        </div>
+
+        <div class="md:col-span-1 flex items-end">
+          <button type="submit" class="btn-liquid w-full justify-center py-3 font-semibold shadow-md" style="background:#3B0764;color:#fff;">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Publish Creation
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Products Table Section with Category & Edit -->
+    <div id="products-section" class="admin-card bg-white rounded-2xl border border-stone-300 shadow-sm overflow-hidden transition-colors duration-200">
+      <div class="p-4 sm:p-5 border-b border-stone-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="admin-heading font-heading text-base sm:text-lg font-bold text-stone-900">Products Catalog (<%= products.length %>)</h2>
+          <p class="admin-subtext text-xs text-stone-600">All prices displayed in Bangladeshi Taka (৳).</p>
+        </div>
+      </div>
+
+      <!-- ══ MOBILE: Product Cards (visible < md) ══ -->
+      <div class="md:hidden divide-y divide-stone-200 admin-mobile-cards">
+        <% products.forEach(function(item) { %>
+          <div class="admin-mobile-product-card p-4 flex gap-3">
+            <!-- Product Image -->
+            <div class="shrink-0">
+              <img src="<%= item.image_url %>" alt="<%= item.title %>" class="w-16 h-20 object-cover rounded-xl border border-stone-300 shadow-sm">
+            </div>
+            <!-- Product Info -->
+            <div class="flex-1 min-w-0 space-y-1.5">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <span class="font-bold text-stone-900 text-xs block admin-heading truncate"><%= item.title %></span>
+                  <span class="text-[10px] text-stone-500 font-mono">#<%= item.id %></span>
+                </div>
+                <span class="font-heading font-bold text-stone-900 text-sm admin-heading whitespace-nowrap">৳<%= Number(item.price).toLocaleString() %></span>
+              </div>
+
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-200 admin-pill">
+                  <%= item.category || 'Decorated Bags' %>
+                </span>
+                <a href="/products/<%= item.id %>" target="_blank" class="text-[10px] text-purple-700 hover:underline font-semibold">View Live &rarr;</a>
+              </div>
+
+              <!-- Mobile Actions -->
+              <div class="flex items-center gap-3 pt-1">
+                <button
+                  type="button"
+                  class="btn-edit-product flex items-center gap-1 text-xs font-bold text-purple-800 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-200 transition active:scale-95"
+                  data-id="<%= item.id %>"
+                  data-title="<%= item.title %>"
+                  data-category="<%= item.category || '' %>"
+                  data-price="<%= item.price %>"
+                  data-description="<%= item.description || '' %>"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  Edit
+                </button>
+                <form id="delete-product-form-<%= item.id %>" action="/admin/products/delete/<%= item.id %>" method="POST" class="inline">
+                  <button type="button" class="btn-delete-product flex items-center gap-1 text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200 transition active:scale-95" data-id="<%= item.id %>" data-title="<%= item.title %>">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+      <!-- ══ DESKTOP: Products Table (visible md+) ══ -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left admin-table">
+          <thead>
+            <tr class="bg-stone-100 text-[11px] uppercase tracking-wider text-stone-700 font-bold border-b border-stone-300 admin-thead-tr">
+              <th class="py-3.5 px-4">ID</th>
+              <th class="py-3.5 px-4">Image</th>
+              <th class="py-3.5 px-4">Title</th>
+              <th class="py-3.5 px-4">Category</th>
+              <th class="py-3.5 px-4">Price (৳)</th>
+              <th class="py-3.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-stone-200 text-sm admin-tbody">
+            <% products.forEach(function(item) { %>
+              <tr class="hover:bg-purple-50/40 transition admin-tr">
+                <td class="py-3.5 px-4 text-xs font-mono text-stone-500 font-semibold">#<%= item.id %></td>
+                <td class="py-3.5 px-4">
+                  <img src="<%= item.image_url %>" alt="" class="w-10 h-12 object-cover rounded-lg border border-stone-300 shadow-sm">
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="font-bold text-stone-900 text-xs block admin-heading"><%= item.title %></span>
+                  <a href="/products/<%= item.id %>" target="_blank" class="text-[10px] text-purple-700 hover:underline font-semibold">View Live &rarr;</a>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-200 inline-block admin-pill">
+                    <%= item.category || 'Decorated Bags' %>
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 font-heading font-bold text-stone-900 text-sm admin-heading">৳<%= Number(item.price).toLocaleString() %></td>
+                <td class="py-3.5 px-4 text-right space-x-3">
+                  <!-- Edit Button -->
+                  <button
+                    type="button"
+                    class="btn-edit-product text-xs font-bold text-purple-800 hover:underline"
+                    data-id="<%= item.id %>"
+                    data-title="<%= item.title %>"
+                    data-category="<%= item.category || '' %>"
+                    data-price="<%= item.price %>"
+                    data-description="<%= item.description || '' %>"
+                  >
+                    Edit
+                  </button>
+
+                  <!-- Delete Button -->
+                  <form id="delete-product-form-<%= item.id %>" action="/admin/products/delete/<%= item.id %>" method="POST" class="inline">
+                    <button type="button" class="btn-delete-product text-xs font-bold text-rose-600 hover:text-rose-800 transition" data-id="<%= item.id %>" data-title="<%= item.title %>">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Customers Section (PAGINATED — ONLY REAL REGISTERED CUSTOMERS) -->
+    <div id="users-section" class="admin-card bg-white rounded-2xl border border-stone-300 shadow-sm overflow-hidden transition-colors duration-200">
+      <div class="p-4 sm:p-5 border-b border-stone-300">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="admin-heading font-heading text-base sm:text-lg font-bold text-stone-900">Registered Customers (<%= userPagination.totalCount %>)</h2>
+              <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Authentic Accounts</span>
+            </div>
+            <p class="admin-subtext text-xs text-stone-600 mt-0.5">Showing registered client accounts. Demo users have been removed; administrators are excluded.</p>
+          </div>
+          <span class="text-xs font-bold text-stone-600 admin-subtext hidden sm:inline">
+            Page <%= userPagination.currentPage %> of <%= userPagination.totalPages %>
+          </span>
+        </div>
+
+        <!-- Customer Search Bar -->
+        <div class="mt-3 relative">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input
+              id="customerSearchInput"
+              type="text"
+              placeholder="Search by name or email..."
+              autocomplete="off"
+              class="input-luxury admin-input text-sm py-2.5 pl-10 pr-10 w-full sm:max-w-sm rounded-xl"
+            >
+            <button id="customerSearchClear" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-600 text-[10px] flex items-center justify-center transition hidden" title="Clear search">&times;</button>
+          </div>
+          <!-- Search Results Container -->
+          <div id="customerSearchResults" class="hidden mt-3"></div>
+        </div>
+      </div>
+
+      <!-- Default content wrapper (hidden during search) -->
+      <div id="customersDefaultContent">
+
+      <!-- ══ MOBILE: Customer Cards (visible < md) ══ -->
+      <div class="md:hidden divide-y divide-stone-200 admin-mobile-cards">
+        <% if (users && users.length > 0) { %>
+          <% users.forEach(function(u) { %>
+            <div class="admin-mobile-customer-card p-4 flex items-center gap-3" data-user-id="<%= u.id %>">
+              <!-- Avatar -->
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center text-purple-900 font-bold text-sm shrink-0 border border-purple-200 shadow-sm">
+                <%= u.name ? u.name.charAt(0).toUpperCase() : '?' %>
+              </div>
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-bold text-stone-900 text-xs admin-heading truncate"><%= u.name %></span>
+                  <!-- 3-dot menu -->
+                  <div class="relative shrink-0">
+                    <button type="button" class="user-dots-btn w-7 h-7 rounded-full hover:bg-stone-100 flex items-center justify-center transition admin-dots-btn" data-user-id="<%= u.id %>" data-user-name="<%= u.name %>">
+                      <svg class="w-4 h-4 text-stone-500" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg>
+                    </button>
+                    <div class="user-dots-menu hidden absolute right-0 top-full mt-1 w-40 bg-white rounded-xl border border-stone-200 shadow-xl z-30 overflow-hidden admin-dropdown-menu" data-menu-for="<%= u.id %>">
+                      <button type="button" class="btn-delete-user w-full text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition" data-user-id="<%= u.id %>" data-user-name="<%= u.name %>">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Delete Customer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <span class="text-[11px] text-stone-600 font-mono block truncate mt-0.5"><%= u.email %></span>
+                <div class="flex items-center justify-between mt-1">
+                  <span class="text-[10px] text-stone-400 font-mono">#<%= u.id %></span>
+                  <span class="text-[10px] text-stone-500 font-mono">
+                    <%= u.created_at ? u.created_at.substring(0, 10) : 'Registered' %>
+                  </span>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="p-8 text-center text-xs text-stone-500 font-medium admin-subtext">
+            No customer accounts registered yet. As visitors sign up or checkout, they will appear here.
+          </div>
+        <% } %>
+      </div>
+
+      <!-- ══ DESKTOP: Customers Table (visible md+) ══ -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left admin-table">
+          <thead>
+            <tr class="bg-stone-100 text-[11px] uppercase tracking-wider text-stone-700 font-bold border-b border-stone-300 admin-thead-tr">
+              <th class="py-3.5 px-4">ID</th>
+              <th class="py-3.5 px-4">Customer Name</th>
+              <th class="py-3.5 px-4">Email Address</th>
+              <th class="py-3.5 px-4">Role</th>
+              <th class="py-3.5 px-4">Registration Date</th>
+              <th class="py-3.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-stone-200 text-sm admin-tbody">
+            <% if (users && users.length > 0) { %>
+              <% users.forEach(function(u) { %>
+                <tr class="hover:bg-purple-50/40 transition admin-tr" data-user-id="<%= u.id %>">
+                  <td class="py-3.5 px-4 text-xs text-stone-500 font-mono font-semibold">#<%= u.id %></td>
+                  <td class="py-3.5 px-4 font-bold text-stone-900 text-xs admin-heading"><%= u.name %></td>
+                  <td class="py-3.5 px-4 text-xs text-stone-700 admin-subtext font-mono font-medium"><%= u.email %></td>
+                  <td class="py-3.5 px-4">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-stone-100 text-stone-800 border border-stone-300 admin-pill">
+                      <%= u.role %>
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4 text-xs text-stone-500 font-mono admin-subtext">
+                    <%= u.created_at ? u.created_at.substring(0, 10) : 'Registered Client' %>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <!-- 3-dot menu -->
+                    <div class="relative inline-block">
+                      <button type="button" class="user-dots-btn w-8 h-8 rounded-full hover:bg-stone-100 flex items-center justify-center transition admin-dots-btn" data-user-id="<%= u.id %>" data-user-name="<%= u.name %>">
+                        <svg class="w-4 h-4 text-stone-500" fill="currentColor" viewBox="0 0 20 20"><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="16" cy="10" r="1.5"/></svg>
+                      </button>
+                      <div class="user-dots-menu hidden absolute right-0 top-full mt-1 w-44 bg-white rounded-xl border border-stone-200 shadow-xl z-30 overflow-hidden admin-dropdown-menu" data-menu-for="<%= u.id %>">
+                        <button type="button" class="btn-delete-user w-full text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition" data-user-id="<%= u.id %>" data-user-name="<%= u.name %>">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          Delete Customer
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="py-10 text-center text-xs text-stone-500 font-medium admin-subtext">
+                  No customer accounts registered yet. As visitors sign up or checkout, they will appear here.
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Controls (10 customers per page) -->
+      <% if (userPagination.totalPages > 1) { %>
+        <div class="p-3 sm:p-4 border-t border-stone-300 flex flex-col items-center gap-3 bg-stone-50 admin-pagination-bar">
+          <span class="text-xs text-stone-600 font-medium admin-subtext text-center">
+            Showing <%= (userPagination.currentPage - 1) * userPagination.limit + 1 %> to <%= Math.min(userPagination.currentPage * userPagination.limit, userPagination.totalCount) %> of <%= userPagination.totalCount %> customers
+          </span>
+
+          <div class="flex items-center gap-1.5 flex-wrap justify-center">
+            <!-- Previous Button -->
+            <% if (userPagination.currentPage > 1) { %>
+              <a href="?userPage=<%= userPagination.currentPage - 1 %>#users-section" class="px-3 py-2 sm:py-1.5 rounded-lg border border-stone-300 text-xs font-bold text-stone-800 hover:bg-white transition admin-page-btn">
+                &larr; Prev
+              </a>
+            <% } else { %>
+              <span class="px-3 py-2 sm:py-1.5 rounded-lg border border-stone-200 text-xs font-medium text-stone-400 cursor-not-allowed admin-page-btn-disabled">
+                &larr; Prev
+              </span>
+            <% } %>
+
+            <!-- Page Numbers -->
+            <% for (let p = 1; p <= userPagination.totalPages; p++) { %>
+              <% if (p === userPagination.currentPage) { %>
+                <span class="w-9 h-9 sm:w-8 sm:h-8 rounded-lg bg-brand-plum text-white text-xs font-bold flex items-center justify-center shadow-sm">
+                  <%= p %>
+                </span>
+              <% } else { %>
+                <a href="?userPage=<%= p %>#users-section" class="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-stone-300 text-xs font-bold text-stone-800 hover:bg-white flex items-center justify-center transition admin-page-btn">
+                  <%= p %>
+                </a>
+              <% } %>
+            <% } %>
+
+            <!-- Next Button -->
+            <% if (userPagination.currentPage < userPagination.totalPages) { %>
+              <a href="?userPage=<%= userPagination.currentPage + 1 %>#users-section" class="px-3 py-2 sm:py-1.5 rounded-lg border border-stone-300 text-xs font-bold text-stone-800 hover:bg-white transition admin-page-btn">
+                Next &rarr;
+              </a>
+            <% } else { %>
+              <span class="px-3 py-2 sm:py-1.5 rounded-lg border border-stone-200 text-xs font-medium text-stone-400 cursor-not-allowed admin-page-btn-disabled">
+                Next &rarr;
+              </span>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+
+      </div><!-- end #customersDefaultContent -->
+    </div>
+
+  </div>
+</main>
+
+<!-- Edit Product & Category Modal -->
+<div id="editProductModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+  <div class="admin-card w-full max-w-lg p-6 sm:p-7 rounded-2xl shadow-2xl bg-white border border-stone-300 relative transform scale-95 transition-transform duration-300">
+    <button type="button" id="closeEditModal" class="absolute top-4 right-4 text-stone-500 hover:text-stone-900 text-xl w-8 h-8 rounded-full flex items-center justify-center bg-stone-100 admin-close-btn">
+      &times;
+    </button>
+
+    <div class="mb-5">
+      <h3 class="admin-heading font-heading text-lg font-bold text-stone-900">Edit Creation & Category</h3>
+      <p class="admin-subtext text-xs text-stone-600 mt-0.5">Modify title, price in Taka (৳), or category.</p>
+    </div>
+
+    <form id="editProductForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+      <div>
+        <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1">Title *</label>
+        <input id="editTitle" name="title" required class="input-luxury admin-input text-sm">
+      </div>
+
+      <div>
+        <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1">Category *</label>
+        <select id="editCategorySelect" name="category" required class="input-luxury admin-input text-sm">
+          <% categories.forEach(function(cat) { %>
+            <option value="<%= cat.name %>"><%= cat.name %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div>
+        <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1">Price (৳ Taka BDT) *</label>
+        <input id="editPrice" name="price" type="number" step="1" required class="input-luxury admin-input text-sm">
+      </div>
+
+      <div>
+        <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1">Description</label>
+        <textarea id="editDescription" name="description" rows="2" class="input-luxury admin-input text-sm"></textarea>
+      </div>
+
+      <div>
+        <label class="admin-label block text-[11px] uppercase tracking-wider text-stone-700 font-bold mb-1">Replace Image (Optional)</label>
+        <input name="image" type="file" accept="image/*" class="admin-subtext text-xs text-stone-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-purple-100 file:text-purple-900">
+      </div>
+
+      <div class="flex justify-end gap-2.5 pt-3 border-t border-stone-200 admin-modal-footer">
+        <button type="button" id="cancelEditModal" class="px-4 py-2 rounded-full border border-stone-300 text-xs font-bold text-stone-700 hover:bg-stone-100 transition admin-cancel-btn">
+          Cancel
+        </button>
+        <button type="submit" class="btn-liquid px-6 py-2 text-xs font-bold" style="background:#3B0764;color:#fff;">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Scripts -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const editModal = document.getElementById('editProductModal');
+    const closeBtn = document.getElementById('closeEditModal');
+    const cancelBtn = document.getElementById('cancelEditModal');
+    const editForm = document.getElementById('editProductForm');
+    const editTitle = document.getElementById('editTitle');
+    const editCatSelect = document.getElementById('editCategorySelect');
+    const editPrice = document.getElementById('editPrice');
+    const editDescription = document.getElementById('editDescription');
+
+    function hideEditModal() {
+      if (!editModal) return;
+      editModal.classList.add('opacity-0', 'pointer-events-none');
+      editModal.querySelector('.admin-card').classList.remove('scale-100');
+      editModal.querySelector('.admin-card').classList.add('scale-95');
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', hideEditModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', hideEditModal);
+    if (editModal) {
+      editModal.addEventListener('click', (e) => {
+        if (e.target === editModal) hideEditModal();
+      });
+    }
+
+    document.querySelectorAll('.btn-edit-product').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        editForm.action = `/admin/products/edit/${id}`;
+        editTitle.value = btn.dataset.title || '';
+        const currentCat = btn.dataset.category || '';
+        editPrice.value = btn.dataset.price || '';
+        editDescription.value = btn.dataset.description || '';
+
+        // Select the matching category option
+        for (let opt of editCatSelect.options) {
+          if (opt.value.toLowerCase() === currentCat.toLowerCase()) {
+            opt.selected = true;
+            break;
+          }
+        }
+
+        editModal.classList.remove('opacity-0', 'pointer-events-none');
+        editModal.querySelector('.admin-card').classList.remove('scale-95');
+        editModal.querySelector('.admin-card').classList.add('scale-100');
+      });
+    });
+
+    // In-website luxury confirmation for category deletion (Zero native browser alerts/confirms)
+    document.querySelectorAll('.btn-delete-category').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const catId = btn.dataset.id;
+        const catName = btn.dataset.name;
+        const form = document.getElementById('delete-cat-form-' + catId);
+        if (!form) return;
+
+        if (typeof window.showLuxuryConfirm === 'function') {
+          window.showLuxuryConfirm(
+            'Remove Category?',
+            `Are you sure you want to remove category "${catName}"? Products in this category will keep their attributes.`,
+            'Remove Category',
+            async () => {
+              try {
+                const res = await fetch(`/admin/categories/delete/${catId}`, {
+                  method: 'POST',
+                  headers: { 'Accept': 'application/json' }
+                });
+                if (res.status === 401) {
+                  const json = await res.json();
+                  window.location.href = json.redirect || '/auth/login';
+                  return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                  const pill = btn.closest('.admin-pill');
+                  if (pill) {
+                    pill.style.transition = 'all 0.3s ease';
+                    pill.style.opacity = '0';
+                    pill.style.transform = 'scale(0.8)';
+                    setTimeout(() => pill.remove(), 300);
+                  }
+                  if (window.showLuxuryToast) {
+                    window.showLuxuryToast('Category Removed', `"${catName}" has been removed.`);
+                  }
+                } else {
+                  form.submit();
+                }
+              } catch (err) {
+                form.submit();
+              }
+            }
+          );
+        } else {
+          form.submit();
+        }
+      });
+    });
+
+    // In-website luxury confirmation for product deletion (Zero native browser alerts/confirms)
+    document.querySelectorAll('.btn-delete-product').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const prodId = btn.dataset.id;
+        const prodTitle = btn.dataset.title || 'this creation';
+        const form = document.getElementById('delete-product-form-' + prodId);
+        if (!form) return;
+
+        if (typeof window.showLuxuryConfirm === 'function') {
+          window.showLuxuryConfirm(
+            'Delete Boutique Creation?',
+            `Are you sure you want to permanently delete "${prodTitle}"? This action cannot be reversed.`,
+            'Delete Permanently',
+            () => form.submit()
+          );
+        } else {
+          form.submit();
+        }
+      });
+    });
+
+    // Smooth Add Category handling with in-website toast notification
+    const addCatForm = document.getElementById('addCategoryForm');
+    if (addCatForm) {
+      addCatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('newCategoryInput');
+        const name = (input ? input.value : '').trim();
+        if (!name) return;
+
+        try {
+          const res = await fetch('/admin/categories/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Accept': 'application/json'
+            },
+            body: new URLSearchParams({ name })
+          });
+          if (res.status === 401) {
+            const json = await res.json();
+            window.location.href = json.redirect || '/auth/login';
+            return;
+          }
+          const data = await res.json();
+          if (data.success) {
+            if (input) input.value = '';
+            if (window.showLuxuryToast) {
+              window.showLuxuryToast('Category Added', `Category "${name}" added successfully.`);
+            }
+            setTimeout(() => {
+              window.location.reload();
+            }, 600);
+          } else {
+            if (window.showLuxuryToast) {
+              window.showLuxuryToast('Notice', data.error || 'Could not add category.', true);
+            }
+          }
+        } catch (err) {
+          addCatForm.submit();
+        }
+      });
+    }
+  });
+</script>
+
+<!-- Promotional Coupon AJAX Management with In-Website Popup Figures -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const addCouponForm = document.getElementById('addCouponForm');
+    const newCouponInput = document.getElementById('newCouponInput');
+    const couponsContainer = document.getElementById('couponsChipsContainer');
+
+    function createCouponChipElement(id, code) {
+      const chip = document.createElement('div');
+      chip.className = 'coupon-chip inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 shadow-2xs group transition hover:border-purple-400';
+      chip.setAttribute('data-coupon-id', id);
+      chip.innerHTML = `
+        <span class="font-mono font-bold text-xs text-purple-950 dark:text-purple-200 tracking-wider">
+          ${code}
+        </span>
+        <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+          Free Delivery
+        </span>
+        <button
+          type="button"
+          class="btn-delete-coupon text-stone-400 hover:text-rose-600 transition text-xs font-bold p-0.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/50"
+          data-id="${id}"
+          data-code="${code}"
+          title="Remove coupon code"
+        >
+          &times;
+        </button>
+      `;
+      return chip;
+    }
+
+    // Add coupon via AJAX (no alert, no signout)
+    if (addCouponForm) {
+      addCouponForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = (newCouponInput ? newCouponInput.value : '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+        if (!code) {
+          if (window.showLuxuryToast) window.showLuxuryToast('Notice', 'Please type a valid coupon code.', true);
+          return;
+        }
+
+        try {
+          const res = await fetch('/admin/coupons/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Accept': 'application/json'
+            },
+            body: new URLSearchParams({ code })
+          });
+
+          if (res.status === 401) {
+            if (window.showLuxuryToast) window.showLuxuryToast('Authentication', 'Session expired. Please sign in.', true);
+            setTimeout(() => window.location.href = '/auth/login?redirect=' + encodeURIComponent('/admin#coupons-section'), 1000);
+            return;
+          }
+
+          const data = await res.json();
+          if (data.success) {
+            if (newCouponInput) newCouponInput.value = '';
+
+            // Remove empty notice if present
+            const emptyNotice = document.getElementById('noCouponsNotice');
+            if (emptyNotice) emptyNotice.remove();
+
+            // Append new coupon chip
+            const newChip = createCouponChipElement(data.id || Date.now(), data.code);
+            couponsContainer.appendChild(newChip);
+
+            if (window.showLuxuryToast) {
+              window.showLuxuryToast('Coupon Activated', `Coupon "${data.code}" is active for free delivery.`);
+            }
+          } else {
+            if (window.showLuxuryToast) {
+              window.showLuxuryToast('Notice', data.error || 'Could not add coupon code.', true);
+            }
+          }
+        } catch (err) {
+          if (window.showLuxuryToast) {
+            window.showLuxuryToast('Error', 'Network error. Please try again.', true);
+          }
+        }
+      });
+    }
+
+    // Delete coupon with Luxury Confirmation Popup Figure (zero browser alert/confirm)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-delete-coupon');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const couponId = btn.getAttribute('data-id');
+      const couponCode = btn.getAttribute('data-code') || 'this coupon';
+      const chip = btn.closest('.coupon-chip');
+
+      const doDelete = async () => {
+        try {
+          const res = await fetch(`/admin/coupons/delete/${couponId}`, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (res.status === 401) {
+            if (window.showLuxuryToast) window.showLuxuryToast('Authentication', 'Session expired. Please sign in.', true);
+            setTimeout(() => window.location.href = '/auth/login?redirect=' + encodeURIComponent('/admin#coupons-section'), 1000);
+            return;
+          }
+
+          const data = await res.json();
+          if (data.success) {
+            if (chip) {
+              chip.style.transition = 'all 0.25s ease';
+              chip.style.opacity = '0';
+              chip.style.transform = 'scale(0.8)';
+              setTimeout(() => {
+                chip.remove();
+                if (couponsContainer && !couponsContainer.querySelector('.coupon-chip')) {
+                  couponsContainer.innerHTML = `
+                    <div id="noCouponsNotice" class="p-4 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 text-center text-xs text-stone-500 w-full">
+                      No coupon codes active yet. Type a code above (like <strong class="font-mono text-purple-700 dark:text-purple-300">FREESHIP</strong>) and click <strong>Add Coupon</strong> to grant customers free delivery.
+                    </div>
+                  `;
+                }
+              }, 250);
+            }
+            if (window.showLuxuryToast) {
+              window.showLuxuryToast('Coupon Removed', `Coupon "${couponCode}" has been removed.`);
+            }
+          } else {
+            if (window.showLuxuryToast) {
+              window.showLuxuryToast('Error', 'Could not delete coupon.', true);
+            }
+          }
+        } catch (err) {
+          if (window.showLuxuryToast) {
+            window.showLuxuryToast('Error', 'Network error. Please try again.', true);
+          }
+        }
+      };
+
+      if (typeof window.showLuxuryConfirm === 'function') {
+        window.showLuxuryConfirm(
+          'Remove Coupon?',
+          `Are you sure you want to remove promotional code "${couponCode}"? Customers will no longer receive free delivery with this code.`,
+          'Delete Coupon',
+          doDelete
+        );
+      } else {
+        doDelete();
+      }
+    });
+  });
+</script>
+
+<!-- Customer Search, 3-Dot Menu & Delete User Scripts -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // ═══════════════════════════════════════════
+    // 1. CUSTOMER SEARCH (Live search with debounce)
+    // ═══════════════════════════════════════════
+    const searchInput = document.getElementById('customerSearchInput');
+    const searchClear = document.getElementById('customerSearchClear');
+    const searchResults = document.getElementById('customerSearchResults');
+    const defaultContent = document.getElementById('customersDefaultContent');
+    let searchTimer = null;
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function renderSearchResults(users) {
+      if (!users.length) {
+        searchResults.innerHTML = `
+          <div class="p-6 text-center text-xs text-stone-500 font-medium admin-subtext">
+            <svg class="w-8 h-8 mx-auto mb-2 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            No customers found matching your search.
+          </div>`;
+        return;
+      }
+
+      const html = users.map(u => `
+        <div class="admin-mobile-customer-card p-3.5 flex items-center gap-3 hover:bg-purple-50/40 transition search-result-row" data-user-id="${u.id}">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center text-purple-900 font-bold text-sm shrink-0 border border-purple-200 shadow-sm">
+            ${escapeHtml(u.name ? u.name.charAt(0).toUpperCase() : '?')}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-stone-900 text-xs admin-heading truncate">${escapeHtml(u.name)}</span>
+              <div class="relative shrink-0">
+                <button type="button" class="user-dots-btn w-7 h-7 rounded-full hover:bg-stone-100 flex items-center justify-center transition admin-dots-btn" data-user-id="${u.id}" data-user-name="${escapeHtml(u.name)}">
+                  <svg class="w-4 h-4 text-stone-500" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg>
+                </button>
+                <div class="user-dots-menu hidden absolute right-0 top-full mt-1 w-40 bg-white rounded-xl border border-stone-200 shadow-xl z-30 overflow-hidden admin-dropdown-menu" data-menu-for="${u.id}">
+                  <button type="button" class="btn-delete-user w-full text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition" data-user-id="${u.id}" data-user-name="${escapeHtml(u.name)}">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Delete Customer
+                  </button>
+                </div>
+              </div>
+            </div>
+            <span class="text-[11px] text-stone-600 font-mono block truncate mt-0.5">${escapeHtml(u.email)}</span>
+            <div class="flex items-center justify-between mt-0.5">
+              <span class="text-[10px] text-stone-400 font-mono">#${u.id}</span>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-stone-100 text-stone-700 border border-stone-200 admin-pill">${escapeHtml(u.role)}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      searchResults.innerHTML = `
+        <div class="text-[10px] font-bold uppercase tracking-wider text-stone-500 mb-2 px-1">${users.length} result${users.length !== 1 ? 's' : ''} found</div>
+        <div class="divide-y divide-stone-200 rounded-xl border border-stone-200 overflow-hidden admin-card" style="box-shadow: none !important;">
+          ${html}
+        </div>`;
+
+      // Re-attach event listeners for dynamically rendered elements
+      attachDotsListeners(searchResults);
+      attachDeleteListeners(searchResults);
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const q = searchInput.value.trim();
+        if (searchClear) searchClear.classList.toggle('hidden', !q);
+
+        if (searchTimer) clearTimeout(searchTimer);
+
+        if (!q) {
+          searchResults.classList.add('hidden');
+          searchResults.innerHTML = '';
+          if (defaultContent) defaultContent.classList.remove('hidden');
+          return;
+        }
+
+        searchTimer = setTimeout(async () => {
+          try {
+            const res = await fetch(`/admin/users/search?q=${encodeURIComponent(q)}`, {
+              headers: { 'Accept': 'application/json' }
+            });
+            if (res.status === 401) {
+              window.location.href = '/auth/login';
+              return;
+            }
+            const data = await res.json();
+            if (data.success) {
+              if (defaultContent) defaultContent.classList.add('hidden');
+              searchResults.classList.remove('hidden');
+              renderSearchResults(data.users);
+            }
+          } catch (err) {
+            console.error('Search error:', err);
+          }
+        }, 300);
+      });
+    }
+
+    if (searchClear) {
+      searchClear.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        searchClear.classList.add('hidden');
+        searchResults.classList.add('hidden');
+        searchResults.innerHTML = '';
+        if (defaultContent) defaultContent.classList.remove('hidden');
+        searchInput.focus();
+      });
+    }
+
+    // ═══════════════════════════════════════════
+    // 2. THREE-DOT DROPDOWN MENU LOGIC
+    // ═══════════════════════════════════════════
+    function closeAllDotMenus() {
+      document.querySelectorAll('.user-dots-menu').forEach(m => m.classList.add('hidden'));
+    }
+
+    function attachDotsListeners(container) {
+      (container || document).querySelectorAll('.user-dots-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const userId = btn.dataset.userId;
+          const menu = (container || document).querySelector(`.user-dots-menu[data-menu-for="${userId}"]`);
+          if (!menu) return;
+
+          // If this menu is already open, just close it
+          const isOpen = !menu.classList.contains('hidden');
+          closeAllDotMenus();
+          if (!isOpen) {
+            menu.classList.remove('hidden');
+          }
+        });
+      });
+    }
+
+    // Close menus when clicking anywhere outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.user-dots-btn') && !e.target.closest('.user-dots-menu')) {
+        closeAllDotMenus();
+      }
+    });
+
+    // Attach to static elements
+    attachDotsListeners(document);
+
+    // ═══════════════════════════════════════════
+    // 3. DELETE CUSTOMER (with luxury confirm)
+    // ═══════════════════════════════════════════
+    function handleDeleteUser(userId, userName, rowEl) {
+      const doDelete = async () => {
+        try {
+          const res = await fetch(`/admin/users/delete/${userId}`, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' }
+          });
+          if (res.status === 401) {
+            const json = await res.json();
+            window.location.href = json.redirect || '/auth/login';
+            return;
+          }
+          const data = await res.json();
+          if (data.success) {
+            // Animate removal
+            if (rowEl) {
+              rowEl.style.transition = 'all 0.3s ease';
+              rowEl.style.opacity = '0';
+              rowEl.style.transform = 'translateX(-20px)';
+              setTimeout(() => rowEl.remove(), 300);
+            }
+            if (window.showLuxuryToast) {
+              window.showLuxuryToast('Customer Deleted', `"${userName}" has been removed.`);
+            }
+          } else {
+            if (window.showLuxuryToast) {
+              window.showLuxuryToast('Error', 'Could not delete customer.', true);
+            }
+          }
+        } catch (err) {
+          if (window.showLuxuryToast) {
+            window.showLuxuryToast('Error', 'Network error. Please try again.', true);
+          }
+        }
+      };
+
+      closeAllDotMenus();
+
+      if (typeof window.showLuxuryConfirm === 'function') {
+        window.showLuxuryConfirm(
+          'Delete Customer Account?',
+          `Are you sure you want to permanently delete "${userName}"? All their data will be removed. This cannot be undone.`,
+          'Delete Customer',
+          doDelete
+        );
+      } else {
+        doDelete();
+      }
+    }
+
+    function attachDeleteListeners(container) {
+      (container || document).querySelectorAll('.btn-delete-user').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const userId = btn.dataset.userId;
+          const userName = btn.dataset.userName || 'this customer';
+          // Find the closest row/card
+          const row = btn.closest('[data-user-id]') || btn.closest('tr') || btn.closest('.admin-mobile-customer-card') || btn.closest('.search-result-row');
+          handleDeleteUser(userId, userName, row);
+        });
+      });
+    }
+
+    // Attach to static elements
+    attachDeleteListeners(document);
+  });
+</script>
+
+<!-- High-Contrast Solid Opaque Styles for Light & Dark Modes -->
+<style>
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+  }
+  .admin-main {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+  .admin-card {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+  }
+  .admin-heading {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+  }
+  .admin-subtext {
+    color: #475569 !important;
+  }
+  .admin-label {
+    color: #1e293b !important;
+    font-weight: 700 !important;
+  }
+  .admin-input {
+    background-color: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+  .admin-table thead tr {
+    background-color: #f8fafc !important;
+    color: #1e293b !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+  }
+  .admin-table tbody tr {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  .admin-table tbody tr:hover {
+    background-color: #f5f3ff !important;
+  }
+
+  html.dark .admin-main {
+    background-color: #09090b !important;
+    color: #f4f4f5 !important;
+  }
+  html.dark .admin-card {
+    background-color: #18181b !important;
+    border: 1px solid #27272a !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+  }
+  html.dark .admin-heading {
+    color: #ffffff !important;
+  }
+  html.dark .admin-subtext {
+    color: #a1a1aa !important;
+  }
+  html.dark .admin-label {
+    color: #e4e4e7 !important;
+  }
+  html.dark .admin-input {
+    background-color: #27272a !important;
+    border: 1.5px solid #3f3f46 !important;
+    color: #ffffff !important;
+  }
+  html.dark .admin-input::placeholder {
+    color: #71717a !important;
+  }
+  html.dark .admin-table thead tr {
+    background-color: #27272a !important;
+    color: #f4f4f5 !important;
+    border-color: #3f3f46 !important;
+  }
+  html.dark .admin-table tbody tr {
+    background-color: #18181b !important;
+    border-color: #27272a !important;
+    color: #e4e4e7 !important;
+  }
+  html.dark .admin-table tbody tr:hover {
+    background-color: #27272a !important;
+  }
+  html.dark .admin-pill {
+    background-color: #27272a !important;
+    color: #e4e4e7 !important;
+    border-color: #3f3f46 !important;
+  }
+  html.dark .admin-pagination-bar {
+    background-color: #18181b !important;
+    border-color: #27272a !important;
+  }
+  html.dark .admin-page-btn {
+    border-color: #3f3f46 !important;
+    color: #f4f4f5 !important;
+    background-color: #27272a !important;
+  }
+  html.dark .admin-page-btn:hover {
+    background-color: #581c87 !important;
+    color: #ffffff !important;
+  }
+  html.dark .admin-page-btn-disabled {
+    border-color: #27272a !important;
+    color: #52525b !important;
+  }
+  html.dark .admin-close-btn,
+  html.dark .admin-cancel-btn {
+    background-color: #27272a !important;
+    color: #e4e4e7 !important;
+    border-color: #3f3f46 !important;
+  }
+  html.dark .admin-modal-footer {
+    border-color: #27272a !important;
+  }
+  html.dark .admin-badge {
+    background-color: #3B0764 !important;
+    color: #f3e8ff !important;
+    border-color: #7e22ce !important;
+  }
+  /* Light mode for product count badge & location */
+  .product-count-badge {
+    background-color: #f3e8ff;
+    color: #3b0764;
+    border: 1px solid #d8b4fe;
+  }
+  .order-location-addr {
+    color: #0f172a;
+  }
+  .order-location-region {
+    color: #6b21a8;
+  }
+
+  /* Dark mode overrides for location & product count */
+  html.dark .order-location-addr {
+    color: #ffffff !important;
+  }
+  html.dark .order-location-region {
+    color: #ffffff !important;
+  }
+  html.dark .product-count-badge {
+    background-color: #3b0764 !important;
+    color: #ffffff !important;
+    border: 1px solid #9333ea !important;
+    box-shadow: 0 0 10px rgba(147, 51, 234, 0.3) !important;
+  }
+
+  /* ═══════════════════════════════════════════
+     MOBILE-FIRST ADMIN PANEL RESPONSIVE STYLES
+     ═══════════════════════════════════════════ */
+
+  /* Mobile card hover/active states */
+  .admin-mobile-order-card,
+  .admin-mobile-product-card,
+  .admin-mobile-customer-card {
+    transition: background-color 0.15s ease;
+  }
+  .admin-mobile-order-card:active,
+  .admin-mobile-product-card:active,
+  .admin-mobile-customer-card:active {
+    background-color: #faf5ff;
+  }
+
+  /* Dark mode: mobile cards */
+  html.dark .admin-mobile-order-card:active,
+  html.dark .admin-mobile-product-card:active,
+  html.dark .admin-mobile-customer-card:active {
+    background-color: #27272a !important;
+  }
+
+  /* Mobile info blocks (delivery address etc.) */
+  .admin-mobile-info-block {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+  html.dark .admin-mobile-info-block {
+    background-color: #27272a !important;
+    border-color: #3f3f46 !important;
+  }
+
+  /* Mobile status select — larger touch target */
+  .admin-mobile-select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+  }
+
+  /* Dark mode mobile select */
+  html.dark .admin-mobile-select {
+    background-color: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #f4f4f5 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+  }
+
+  /* Mobile customer avatar dark mode */
+  html.dark .admin-mobile-customer-card .w-10.h-10 {
+    background: linear-gradient(135deg, #3b0764, #581c87) !important;
+    border-color: #7e22ce !important;
+    color: #f3e8ff !important;
+  }
+
+  /* Mobile order card avatar dark mode */
+  html.dark .admin-mobile-order-card .w-8.h-8 {
+    background-color: #27272a !important;
+    color: #e4e4e7 !important;
+  }
+
+  /* Mobile product card edit/delete buttons dark mode */
+  html.dark .admin-mobile-product-card .btn-edit-product {
+    background-color: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #c4b5fd !important;
+  }
+  html.dark .admin-mobile-product-card .btn-delete-product {
+    background-color: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #fda4af !important;
+  }
+
+  /* Mobile-specific: card dividers in dark mode */
+  html.dark .admin-mobile-cards {
+    border-color: #27272a !important;
+  }
+  html.dark .admin-mobile-cards > div {
+    border-color: #27272a !important;
+  }
+
+  /* Mobile status form border in dark mode */
+  html.dark .admin-mobile-status-form {
+    border-color: #27272a !important;
+  }
+
+  /* Ensure all admin page buttons have adequate touch target */
+  @media (max-width: 639px) {
+    .admin-page-btn,
+    .admin-page-btn-disabled {
+      min-height: 2.25rem;
+      min-width: 2.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  /* Admin main: reduce side padding on small phones */
+  @media (max-width: 400px) {
+    .admin-main .max-w-5xl {
+      padding-left: 0.75rem !important;
+      padding-right: 0.75rem !important;
+    }
+  }
+
+  /* Scrollbar hidden for mobile nav */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 3-dot dropdown menu styling */
+  .admin-dropdown-menu {
+    animation: dropdownFadeIn 0.15s ease;
+  }
+  @keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-4px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  html.dark .admin-dropdown-menu {
+    background-color: #27272a !important;
+    border-color: #3f3f46 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  }
+  html.dark .admin-dropdown-menu .btn-delete-user {
+    color: #fda4af !important;
+  }
+  html.dark .admin-dropdown-menu .btn-delete-user:hover {
+    background-color: rgba(225, 29, 72, 0.15) !important;
+  }
+  html.dark .admin-dots-btn:hover {
+    background-color: #3f3f46 !important;
+  }
+  html.dark .admin-dots-btn svg {
+    color: #a1a1aa !important;
+  }
+
+  /* Search clear button dark mode */
+  html.dark #customerSearchClear {
+    background-color: #3f3f46 !important;
+    color: #a1a1aa !important;
+  }
+  html.dark #customerSearchClear:hover {
+    background-color: #52525b !important;
+  }
+
+  /* Search result rows dark mode */
+  html.dark .search-result-row:hover {
+    background-color: #27272a !important;
+  }
+</style>
+
+<%- include('partials/footer') %>

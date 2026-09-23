@@ -1,0 +1,260 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main class="pt-28 sm:pt-32 pb-24 px-4 sm:px-6 max-w-5xl mx-auto min-h-screen relative z-10">
+  
+  <!-- Breadcrumb -->
+  <div class="mb-6 flex items-center gap-2 text-xs text-stone-500">
+    <a href="/" class="hover:text-brand-plum transition">Home</a>
+    <span>/</span>
+    <span class="text-brand-dark font-semibold">Client Profile</span>
+  </div>
+
+  <!-- Client Header Card -->
+  <div class="glass rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-sm mb-8 relative overflow-hidden">
+    <div class="absolute -right-12 -top-12 w-48 h-48 bg-purple-100/60 rounded-full blur-2xl pointer-events-none"></div>
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-purple-900 via-brand-plum to-purple-700 text-white flex items-center justify-center font-heading text-2xl sm:text-3xl font-bold shadow-lg shadow-purple-900/20 shrink-0">
+          <%= user.name.charAt(0).toUpperCase() %>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <h1 class="font-heading text-2xl sm:text-3xl font-medium text-brand-dark"><%= user.name %></h1>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-100 text-purple-950 border border-purple-200">
+              <%= user.role === 'admin' ? 'Executive Admin' : 'Bespoke Patron' %>
+            </span>
+          </div>
+          <p class="text-xs text-stone-500 flex items-center gap-1.5 font-mono">
+            <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <%= user.email %>
+          </p>
+          <span class="text-[11px] text-stone-400 block mt-1">
+            Patron since <%= new Date(user.created_at || Date.now()).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-2.5 shrink-0 pt-2 sm:pt-0">
+        <a href="/cart" class="btn-liquid btn-liquid-sm justify-center text-xs" style="background:#3B0764;color:#fff;">
+          <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          View Bag
+        </a>
+        <a href="/auth/logout" class="px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-rose-600 hover:bg-rose-50 transition border border-stone-200">
+          Sign Out
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       CURRENT ORDER STATISTICS
+       ═══════════════════════════════════════════ -->
+  <div class="mb-10">
+    <div class="mb-4">
+      <span class="text-[10px] uppercase tracking-[0.25em] text-brand-plum font-bold block mb-0.5">Atelier Insights</span>
+      <h2 class="font-heading text-xl font-bold text-brand-dark">Current Order Statistics</h2>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total Orders -->
+      <div class="glass rounded-2xl p-5 border border-stone-200/80 shadow-sm">
+        <div class="flex items-center justify-between text-stone-400 mb-2">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-stone-500">Total Orders</span>
+          <svg class="w-4 h-4 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <span class="font-heading text-3xl font-bold text-brand-dark block"><%= stats.totalOrders %></span>
+        <span class="text-[11px] text-stone-500 mt-1 block">Lifetime bespoke orders</span>
+      </div>
+
+      <!-- Active / In-Progress Orders -->
+      <div class="glass rounded-2xl p-5 border border-stone-200/80 shadow-sm">
+        <div class="flex items-center justify-between text-stone-400 mb-2">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-stone-500">In Progress</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+        </div>
+        <span class="font-heading text-3xl font-bold text-amber-600 block"><%= stats.activeOrders %></span>
+        <span class="text-[11px] text-stone-500 mt-1 block">Pending verification or dispatch</span>
+      </div>
+
+      <!-- Completed / Delivered -->
+      <div class="glass rounded-2xl p-5 border border-stone-200/80 shadow-sm">
+        <div class="flex items-center justify-between text-stone-400 mb-2">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-stone-500">Delivered Pieces</span>
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <span class="font-heading text-3xl font-bold text-emerald-600 block"><%= stats.deliveredOrders %></span>
+        <span class="text-[11px] text-stone-500 mt-1 block">Safely received by courier</span>
+      </div>
+
+      <!-- Total Investment (in Taka ৳) -->
+      <div class="glass rounded-2xl p-5 border border-stone-200/80 shadow-sm">
+        <div class="flex items-center justify-between text-stone-400 mb-2">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-stone-500">Total Investment</span>
+          <span class="text-[10px] font-bold text-purple-900 bg-purple-100 px-1.5 py-0.5 rounded">BDT</span>
+        </div>
+        <span class="font-heading text-2xl sm:text-3xl font-bold text-brand-dark block">৳<%= Number(stats.totalSpent).toLocaleString() %></span>
+        <span class="text-[11px] text-stone-500 mt-1 block">Total valuation acquired</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       ORDER HISTORY & DETAILED CARDS
+       ═══════════════════════════════════════════ -->
+  <div>
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-brand-plum font-bold block mb-0.5">Chronology</span>
+        <h2 class="font-heading text-xl font-bold text-brand-dark">Your Orders (<%= orders.length %>)</h2>
+      </div>
+      <a href="/#featured" class="text-xs font-semibold text-brand-plum hover:underline">Explore More Creations &rarr;</a>
+    </div>
+
+    <% if (orders && orders.length > 0) { %>
+      <div class="space-y-6">
+        <% orders.forEach(function(order) { %>
+          <div class="glass rounded-2xl p-5 sm:p-6 border border-stone-200/80 shadow-sm transition-all hover:border-purple-300 duration-300">
+            
+            <!-- Order Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-200/80">
+              <div class="flex items-center gap-3">
+                <span class="font-mono text-sm sm:text-base font-bold text-brand-dark bg-purple-50 border border-purple-200 px-3 py-1 rounded-lg">
+                  <%= order.order_number %>
+                </span>
+                <span class="text-xs text-stone-500">
+                  <%= new Date(order.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                </span>
+              </div>
+
+              <!-- Status Badge -->
+              <div class="flex items-center gap-2">
+                <% if (order.status === 'Pending') { %>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5 shadow-2xs" title="Waiting for admin confirmation">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span>Pending</span>
+                    <span class="text-[10px] text-amber-700 font-normal hidden sm:inline">(Waiting for Admin Confirmation)</span>
+                  </span>
+                <% } else if (order.status === 'Approved' || order.status === 'Confirmed') { %>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1.5 shadow-2xs">
+                    <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <span>Approved</span>
+                  </span>
+                <% } else if (order.status === 'Dispatched') { %>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-900 border border-purple-300 flex items-center gap-1.5 shadow-2xs">
+                    <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                    <span>Dispatched via Luxury Courier</span>
+                  </span>
+                <% } else if (order.status === 'Delivered') { %>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-teal-100 text-teal-900 border border-teal-300 flex items-center gap-1.5 shadow-2xs">
+                    <span class="w-2 h-2 rounded-full bg-teal-600"></span>
+                    <span>Delivered</span>
+                  </span>
+                <% } else { %>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-900 border border-rose-300">
+                    <%= order.status %>
+                  </span>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Order Items Preview -->
+            <div class="py-4 divide-y divide-stone-100 space-y-3">
+              <% (order.items || []).forEach(function(item) { %>
+                <div class="pt-3 first:pt-0 flex items-center justify-between gap-4">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-12 h-14 rounded-lg overflow-hidden bg-stone-100 shrink-0 border border-stone-200">
+                      <img src="<%= item.image_url || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80' %>" alt="" class="w-full h-full object-cover">
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-heading text-xs sm:text-sm font-semibold text-brand-dark truncate"><%= item.title %></h4>
+                      <span class="text-[11px] text-stone-500">Qty: <%= item.quantity %> &times; ৳<%= Number(item.price).toLocaleString() %></span>
+                    </div>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <span class="font-heading font-bold text-xs sm:text-sm text-brand-dark">৳<%= Number(item.price * item.quantity).toLocaleString() %></span>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+
+            <!-- Order Footer: Address, Payment & Total -->
+            <div class="pt-4 border-t border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+              <div class="space-y-1 text-stone-600 max-w-md">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-stone-400">Destination:</span>
+                  <span class="font-medium text-stone-800"><%= order.delivery_address %></span>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-stone-400">Payment:</span>
+                  <span class="font-bold text-brand-dark flex items-center gap-1.5">
+                    <% if (order.payment_method === 'bKash') { %>
+                      <img src="/images/payments/bkash.png" alt="bKash" class="w-4 h-4 rounded object-contain shrink-0 border border-stone-200/60 shadow-2xs">
+                    <% } else if (order.payment_method === 'Nagad') { %>
+                      <img src="/images/payments/nagad.jpg" alt="Nagad" class="w-4 h-4 rounded object-contain shrink-0 border border-stone-200/60 shadow-2xs">
+                    <% } else if (order.payment_method === 'Online Bank Transfer' || (order.payment_method && order.payment_method.includes('Bank'))) { %>
+                      <img src="/images/payments/banking.jpg" alt="Banking" class="w-4 h-4 rounded object-contain shrink-0 border border-stone-200/60 shadow-2xs">
+                    <% } else { %>
+                      <img src="/images/payments/COD.jpg" alt="COD" class="w-4 h-4 rounded object-contain shrink-0 border border-stone-200/60 shadow-2xs">
+                    <% } %>
+                    <span><%= order.payment_method %></span>
+                  </span>
+                  <% if (order.transaction_id) { %>
+                    <span class="font-mono text-[10px] font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded">
+                      TrxID: <%= order.transaction_id %>
+                    </span>
+                  <% } %>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap text-[11px] pt-0.5">
+                  <span class="text-stone-400">Delivery:</span>
+                  <% if (order.coupon_code) { %>
+                    <span class="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                      🎟️ Free Delivery (<strong class="font-mono"><%= order.coupon_code %></strong>)
+                    </span>
+                  <% } else if (order.delivery_charge === 70) { %>
+                    <span class="font-medium text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                      ৳70 (Inside Dhaka)
+                    </span>
+                  <% } else if (order.delivery_charge === 160) { %>
+                    <span class="font-medium text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
+                      ৳160 (Outside Dhaka)
+                    </span>
+                  <% } else { %>
+                    <span class="font-medium text-stone-700">৳<%= Number(order.delivery_charge || 0).toLocaleString() %></span>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0">
+                <span class="text-[10px] uppercase tracking-wider text-stone-400 block">Total Amount</span>
+                <span class="font-heading text-xl font-bold text-brand-dark">
+                  ৳<%= Number(order.total_amount).toLocaleString() %>
+                </span>
+                <% if (order.coupon_code) { %>
+                  <span class="text-[10px] text-emerald-600 block font-medium">Coupon 🎟️ <%= order.coupon_code %> applied</span>
+                <% } %>
+              </div>
+            </div>
+
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="glass rounded-3xl p-10 text-center max-w-md mx-auto border border-stone-200">
+        <div class="w-16 h-16 rounded-full bg-purple-50 text-purple-900 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        </div>
+        <h3 class="font-heading text-lg font-bold text-brand-dark mb-1">No Orders Placed Yet</h3>
+        <p class="text-xs text-stone-500 mb-6">Your bespoke collection awaits its first masterpiece.</p>
+        <a href="/#featured" class="btn-liquid justify-center text-xs py-3 px-6 text-white" style="background: linear-gradient(135deg, #3B0764 0%, #7E22CE 100%);">
+          Browse Catalog &rarr;
+        </a>
+      </div>
+    <% } %>
+  </div>
+
+</main>
+
+<%- include('partials/footer') %>

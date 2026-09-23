@@ -1,0 +1,997 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main class="pt-28 sm:pt-32 pb-24 px-4 sm:px-6 max-w-6xl mx-auto min-h-screen relative z-10">
+  
+  <!-- Breadcrumb -->
+  <div class="mb-6 flex items-center gap-2 text-xs text-stone-500">
+    <a href="/" class="hover:text-brand-plum transition">Home</a>
+    <span>/</span>
+    <a href="/cart" class="hover:text-brand-plum transition">Shopping Bag</a>
+    <span>/</span>
+    <span class="text-brand-dark font-semibold">Bespoke Checkout</span>
+  </div>
+
+  <div class="mb-8">
+    <span class="text-[10px] uppercase tracking-[0.3em] text-brand-plum font-bold block mb-1">Secure Atelier Dispatch</span>
+    <h1 class="font-heading text-3xl sm:text-4xl font-medium text-brand-dark">Bespoke Checkout</h1>
+    <p class="text-xs text-stone-500 mt-1">Please provide your verified delivery coordinates and preferred payment method.</p>
+  </div>
+
+  <% if (error) { %>
+    <div class="mb-6 p-4 rounded-xl text-rose-700 bg-rose-50 border border-rose-200 text-xs flex items-center gap-2.5 shadow-sm animate-fade-in">
+      <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <span><%= error %></span>
+    </div>
+  <% } %>
+
+  <form id="checkoutForm" action="/checkout" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- LEFT: Address & Payment (8 Cols) -->
+    <div class="lg:col-span-7 space-y-6">
+      
+      <!-- Section 1: Contact & Recipient -->
+      <div class="glass rounded-2xl p-6 border border-stone-200/80 shadow-sm space-y-4">
+        <div class="flex items-center gap-2 border-b border-stone-100 pb-3">
+          <div class="w-6 h-6 rounded-full bg-purple-100 text-purple-900 font-bold text-xs flex items-center justify-center">1</div>
+          <h2 class="font-heading text-base font-bold text-brand-dark">Recipient & Contact</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+          <div>
+            <label class="block text-[11px] uppercase tracking-wider text-stone-700 font-semibold mb-1.5">Recipient Full Name *</label>
+            <input
+              name="customer_name"
+              type="text"
+              required
+              value="<%= typeof formData !== 'undefined' && formData.customer_name ? formData.customer_name : (user ? user.name : '') %>"
+              class="input-luxury text-xs sm:text-sm"
+              placeholder="e.g. Eleanor Vance"
+            >
+          </div>
+
+          <div>
+            <label class="block text-[11px] uppercase tracking-wider text-stone-700 font-semibold mb-1.5">Contact Phone (Bangladesh) *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-stone-400">+88</span>
+              <input
+                name="customer_phone"
+                type="tel"
+                required
+                value="<%= typeof formData !== 'undefined' && formData.customer_phone ? formData.customer_phone : '' %>"
+                class="input-luxury text-xs sm:text-sm pl-11"
+                placeholder="017XXXXXXXX"
+              >
+            </div>
+            <span class="text-[10px] text-stone-400 mt-1 block">11-digit mobile number for courier SMS dispatch updates.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Address with Geolocation & Dependent Dropdowns -->
+      <div class="glass rounded-2xl p-6 border border-stone-200/80 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-full bg-purple-100 text-purple-900 font-bold text-xs flex items-center justify-center">2</div>
+            <div>
+              <h2 class="font-heading text-base font-bold text-brand-dark">Delivery Coordinates</h2>
+              <p class="text-[11px] text-stone-500">Hand-delivered via insured luxury courier.</p>
+            </div>
+          </div>
+
+          <!-- Identify My Location Button -->
+          <button
+            type="button"
+            id="btnGeoLocate"
+            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-semibold transition active:scale-95 shadow-sm shrink-0"
+            title="Auto-detect division, district and address via GPS"
+          >
+            <svg id="geoIcon" class="w-3.5 h-3.5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span id="geoBtnText">Identify My Location</span>
+          </button>
+        </div>
+
+        <!-- Geo Status message banner -->
+        <div id="geoStatusBanner" class="hidden p-3 rounded-xl text-xs flex items-center gap-2"></div>
+
+        <!-- Dependent Dropdowns: Division -> District -> Upazila -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+          <!-- Division -->
+          <div>
+            <label class="block text-[11px] uppercase tracking-wider text-stone-700 font-semibold mb-1.5">Division *</label>
+            <select id="divisionSelect" name="division" required class="input-luxury text-xs sm:text-sm">
+              <option value="">Select Division</option>
+              <% (divisions || []).forEach(function(div) { %>
+                <option value="<%= div.name %>" <%= (typeof formData !== 'undefined' && formData.division === div.name) ? 'selected' : '' %>>
+                  <%= div.name %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- District -->
+          <div>
+            <label class="block text-[11px] uppercase tracking-wider text-stone-700 font-semibold mb-1.5">District *</label>
+            <select id="districtSelect" name="district" required class="input-luxury text-xs sm:text-sm" <%= (typeof formData !== 'undefined' && formData.district) ? '' : 'disabled' %>>
+              <option value="">Select District</option>
+              <% if (typeof formData !== 'undefined' && formData.district) { %>
+                <option value="<%= formData.district %>" selected><%= formData.district %></option>
+              <% } %>
+            </select>
+          </div>
+
+          <!-- Upazila -->
+          <div>
+            <label class="block text-[11px] uppercase tracking-wider text-stone-700 font-semibold mb-1.5">Upazila / Thana *</label>
+            <select id="upazilaSelect" name="upazila" required class="input-luxury text-xs sm:text-sm" <%= (typeof formData !== 'undefined' && formData.upazila) ? '' : 'disabled' %>>
+              <option value="">Select Upazila</option>
+              <% if (typeof formData !== 'undefined' && formData.upazila) { %>
+                <option value="<%= formData.upazila %>" selected><%= formData.upazila %></option>
+              <% } %>
+            </select>
+          </div>
+        </div>
+
+        <!-- Area (Text Box) -->
+        <div>
+          <label class="block text-[11px] uppercase tracking-wider text-stone-700 font-semibold mb-1.5">Area & Street Address *</label>
+          <input
+            id="areaInput"
+            name="area"
+            type="text"
+            required
+            value="<%= typeof formData !== 'undefined' && formData.area ? formData.area : '' %>"
+            class="input-luxury text-xs sm:text-sm"
+            placeholder="House/Apartment #, Road #, Sector/Block, Landmark (e.g. House 24, Road 7, Sector 3, Uttara)"
+          >
+          <span class="text-[10px] text-stone-400 mt-1 block">Detailed address for precise door-to-door hand delivery.</span>
+        </div>
+      </div>
+
+      <!-- Section 3: Payment Method (Manual Verification) -->
+      <div class="glass rounded-2xl p-6 border border-stone-200/80 shadow-sm space-y-5">
+        <div class="flex items-center gap-2 border-b border-stone-100 pb-3">
+          <div class="w-6 h-6 rounded-full bg-purple-100 text-purple-900 font-bold text-xs flex items-center justify-center">3</div>
+          <div>
+            <h2 class="font-heading text-base font-bold text-brand-dark">Payment Method</h2>
+            <p class="text-[11px] text-stone-500">All orders are placed under manual atelier review.</p>
+          </div>
+        </div>
+
+        <!-- Custom Radio Button Group -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="paymentOptionsGroup">
+          
+          <!-- Cash on Delivery (Default Selected) -->
+          <label class="payment-card-label relative flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 border-purple-600 bg-purple-50/50 shadow-sm">
+            <input type="radio" name="payment_method" value="Cash on Delivery" class="payment-radio sr-only" checked>
+            <div class="flex items-center gap-3 w-full">
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-purple-600 flex items-center justify-center bg-purple-600">
+                <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="block text-xs font-bold text-brand-dark flex items-center gap-2">
+                  <img src="/images/payments/COD.jpg" alt="Cash on Delivery" class="w-5 h-5 rounded object-contain shrink-0 border border-stone-200/80 shadow-2xs">
+                  <span>Cash on Delivery</span>
+                </span>
+                <span class="block text-[10px] text-stone-500 mt-0.5">Pay upon delivery by luxury courier</span>
+              </div>
+              <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Default</span>
+            </div>
+          </label>
+
+          <!-- bKash -->
+          <label class="payment-card-label relative flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 border-stone-200 bg-white hover:border-purple-300">
+            <input type="radio" name="payment_method" value="bKash" class="payment-radio sr-only">
+            <div class="flex items-center gap-3 w-full">
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-stone-300 flex items-center justify-center">
+                <div class="w-1.5 h-1.5 rounded-full bg-transparent"></div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="block text-xs font-bold text-brand-dark flex items-center gap-2">
+                  <img src="/images/payments/bkash.png" alt="bKash" class="w-5 h-5 rounded object-contain shrink-0 border border-stone-200/80 shadow-2xs">
+                  <span>bKash</span>
+                </span>
+                <span class="block text-[10px] text-stone-500 mt-0.5">Send Money & submit TrxID</span>
+              </div>
+            </div>
+          </label>
+
+          <!-- Nagad -->
+          <label class="payment-card-label relative flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 border-stone-200 bg-white hover:border-purple-300">
+            <input type="radio" name="payment_method" value="Nagad" class="payment-radio sr-only">
+            <div class="flex items-center gap-3 w-full">
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-stone-300 flex items-center justify-center">
+                <div class="w-1.5 h-1.5 rounded-full bg-transparent"></div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="block text-xs font-bold text-brand-dark flex items-center gap-2">
+                  <img src="/images/payments/nagad.jpg" alt="Nagad" class="w-5 h-5 rounded object-contain shrink-0 border border-stone-200/80 shadow-2xs">
+                  <span>Nagad</span>
+                </span>
+                <span class="block text-[10px] text-stone-500 mt-0.5">Send Money & submit TrxID</span>
+              </div>
+            </div>
+          </label>
+
+          <!-- Online Bank Transfer -->
+          <label class="payment-card-label relative flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 border-stone-200 bg-white hover:border-purple-300">
+            <input type="radio" name="payment_method" value="Online Bank Transfer" class="payment-radio sr-only">
+            <div class="flex items-center gap-3 w-full">
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-stone-300 flex items-center justify-center">
+                <div class="w-1.5 h-1.5 rounded-full bg-transparent"></div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="block text-xs font-bold text-brand-dark flex items-center gap-2">
+                  <img src="/images/payments/banking.jpg" alt="Bank Transfer" class="w-5 h-5 rounded object-contain shrink-0 border border-stone-200/80 shadow-2xs">
+                  <span>Bank Transfer</span>
+                </span>
+                <span class="block text-[10px] text-stone-500 mt-0.5">EBL / City Bank transfer</span>
+              </div>
+            </div>
+          </label>
+
+        </div>
+
+        <!-- Dynamic Payment Instructions & Transaction ID Drawer -->
+        
+        <!-- Cash on Delivery Notice -->
+        <div id="codNotice" class="p-4 rounded-xl bg-purple-50/60 border border-purple-200/80 text-xs text-purple-950 flex items-start gap-3 transition-all">
+          <img src="/images/payments/COD.jpg" alt="COD" class="w-6 h-6 rounded object-contain shrink-0 border border-stone-200 shadow-2xs mt-0.5">
+          <div class="leading-relaxed">
+            <strong class="font-semibold block text-brand-dark mb-0.5">Cash on Delivery Confirmed</strong>
+            Please keep exact cash ready (<strong id="codNoticeAmount">৳<%= Number(subtotal).toLocaleString() %></strong>). Our executive courier will collect upon handover with signature receipt.
+          </div>
+        </div>
+
+        <!-- Manual Payment Details Box (bKash / Nagad / Bank) -->
+        <div id="manualPayDrawer" class="hidden p-5 rounded-xl border space-y-4 transition-all duration-300 bg-stone-50/90 border-purple-200 shadow-inner">
+          <div class="flex items-center justify-between border-b border-stone-200 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span id="manualMethodBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 uppercase tracking-wider">
+                <img src="/images/payments/bkash.png" alt="bKash" class="w-3.5 h-3.5 rounded object-contain shrink-0">
+                <span>bKash</span>
+              </span>
+              <span class="text-xs font-bold text-brand-dark">Manual Transfer Instructions</span>
+            </div>
+            <span class="text-[10px] font-mono font-bold text-purple-700">Amount: <span id="manualDrawerAmount">৳<%= Number(subtotal).toLocaleString() %></span></span>
+          </div>
+
+          <!-- Dynamic Instructions Text -->
+          <div id="manualInstructionsText" class="text-xs text-stone-700 leading-relaxed space-y-2">
+            <!-- Injected via JavaScript -->
+          </div>
+
+          <!-- Required TrxID Input Field -->
+          <div class="pt-2 border-t border-stone-200">
+            <label class="block text-[11px] uppercase tracking-wider text-purple-950 font-bold mb-1.5">
+              Enter Transaction ID (TrxID) *
+            </label>
+            <div class="relative">
+              <input
+                id="trxIdInput"
+                name="transaction_id"
+                type="text"
+                class="input-luxury uppercase font-mono tracking-wider font-semibold text-xs sm:text-sm pl-9"
+                placeholder="e.g. 9K72LA0X1P"
+              >
+              <svg class="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+            </div>
+            <span class="text-[10px] text-stone-500 mt-1 block">Our atelier accounts executive will verify this TrxID before dispatching your bespoke piece.</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Order Summary Sticky Card (5 Cols) -->
+    <div class="lg:col-span-5">
+      <div class="glass rounded-2xl p-6 border border-stone-200/80 space-y-5 sticky top-28 shadow-sm">
+        
+        <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+          <h2 class="font-heading text-lg font-bold text-brand-dark">Curated Summary</h2>
+          <a href="/cart" class="text-[11px] font-semibold text-brand-plum hover:underline">Edit Bag</a>
+        </div>
+
+        <!-- Items Mini List -->
+        <div class="divide-y divide-stone-100 max-h-72 overflow-y-auto pr-1 space-y-3">
+          <% items.forEach(function(item) { %>
+            <div class="pt-3 first:pt-0 flex items-center gap-3">
+              <div class="w-14 h-16 rounded-lg overflow-hidden bg-stone-100 shrink-0 border border-stone-200/60">
+                <img src="<%= item.image_url %>" alt="<%= item.title %>" class="w-full h-full object-cover">
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="font-heading text-xs font-semibold text-brand-dark truncate"><%= item.title %></h3>
+                <span class="text-[10px] text-stone-500 block mt-0.5">Qty: <%= item.quantity %> &times; ৳<%= Number(item.price).toLocaleString() %></span>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-bold font-heading text-brand-dark">৳<%= Number(item.price * item.quantity).toLocaleString() %></span>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+
+        <!-- Price breakdown -->
+        <div class="space-y-2.5 text-xs text-stone-600 pt-3 border-t border-stone-200">
+          <div class="flex justify-between">
+            <span>Subtotal (<%= items.reduce((s, i) => s + i.quantity, 0) %> pieces)</span>
+            <span class="font-bold text-brand-dark">৳<%= Number(subtotal).toLocaleString() %></span>
+          </div>
+
+          <!-- Dynamic Courier Delivery Charge (Inside Dhaka ৳70 vs Outside Dhaka ৳160) -->
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="block text-brand-dark font-medium">Delivery Charge</span>
+              <span id="deliveryZoneBadge" class="text-[10px] text-purple-800 font-semibold block mt-0.5">Calculating rate...</span>
+            </div>
+            <div class="text-right">
+              <span id="deliveryChargeText" class="font-heading font-bold text-sm text-brand-dark">৳160</span>
+            </div>
+          </div>
+
+          <!-- Coupon Free Delivery Success Banner (hidden initially) -->
+          <div id="couponDiscountRow" class="hidden justify-between items-center text-emerald-800 bg-emerald-50 p-2 rounded-xl border border-emerald-200 animate-fade-in">
+            <div class="flex items-center gap-1.5">
+              <span>🎟️</span>
+              <span id="appliedCouponLabel" class="text-[11px] font-bold">Coupon Applied</span>
+            </div>
+            <span class="text-[10px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">FREE DELIVERY</span>
+          </div>
+
+          <div class="flex justify-between">
+            <span>Signature Muslin & Box</span>
+            <span class="text-emerald-700 font-semibold uppercase text-[10px] tracking-wider">Included</span>
+          </div>
+        </div>
+
+        <!-- Coupon Code Option -->
+        <div class="pt-3 border-t border-stone-200 space-y-1.5">
+          <label class="block text-[10px] uppercase font-bold text-stone-600 tracking-wider">Apply Coupon Code</label>
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <input
+                type="text"
+                id="couponCodeInput"
+                name="coupon_code"
+                placeholder="e.g. FREESHIP"
+                class="input-luxury uppercase text-xs font-mono font-bold tracking-wider py-2 pl-3 pr-8"
+              >
+              <button
+                type="button"
+                id="btnClearCoupon"
+                class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 font-bold text-xs"
+                title="Remove coupon"
+              >
+                ✕
+              </button>
+            </div>
+            <button
+              type="button"
+              id="btnApplyCoupon"
+              class="btn-liquid btn-liquid-sm px-4 text-xs font-semibold shrink-0"
+              style="background: #3B0764; color: #fff;"
+            >
+              Apply
+            </button>
+          </div>
+          <div id="couponStatusMessage" class="hidden text-[11px] font-medium py-1 px-2.5 rounded-lg border"></div>
+        </div>
+
+        <!-- Total -->
+        <div class="flex justify-between items-baseline pt-3 border-t border-stone-200">
+          <div>
+            <span class="font-heading text-sm font-bold text-brand-dark block">Grand Total</span>
+            <span class="text-[10px] text-stone-400">Includes VAT & Delivery</span>
+          </div>
+          <span id="grandTotalDisplay" class="font-heading text-2xl font-bold text-brand-dark">৳<%= Number(subtotal + 160).toLocaleString() %></span>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          id="btnSubmitOrder"
+          class="btn-liquid w-full justify-center py-4 text-sm font-semibold shadow-xl text-white mt-4"
+          style="background: linear-gradient(135deg, #3B0764 0%, #7E22CE 100%);"
+        >
+          <span>Confirm & Place Bespoke Order</span>
+          <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+
+        <!-- Guarantee Note -->
+        <div class="pt-2 text-[10px] text-stone-500 text-center flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>Orders placed with 'Pending' status for manual atelier review</span>
+        </div>
+
+      </div>
+    </div>
+
+  </form>
+
+  <!-- Modal: Wait for Admin Confirmation -->
+  <div id="orderConfirmationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-strong bg-white/95 w-full max-w-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-purple-200/80 text-center space-y-5 transform scale-95 transition-all duration-300">
+      <div class="w-16 h-16 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto shadow-inner">
+        <svg class="w-8 h-8 animate-spin" style="animation-duration: 2.5s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" stroke-width="2" stroke-dasharray="14 6" />
+          <path stroke-linecap="round" stroke-width="2" d="M12 6v6l4 2" />
+        </svg>
+      </div>
+      <div>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-amber-800 font-bold block mb-1">Status: Pending Verification</span>
+        <h3 class="font-heading text-xl sm:text-2xl font-bold text-brand-dark">Wait for Admin Confirmation</h3>
+        <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+          Your bespoke order has been placed under <strong>'Pending'</strong> status. Please wait for our admin to check and approve your order.
+        </p>
+        <div class="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-left text-xs text-amber-950 flex items-start gap-2">
+          <span class="text-base">⏳</span>
+          <p class="leading-relaxed text-[11px]">
+            When the admin reviews and approves your order, your status in <strong>Profile</strong> will show <strong class="text-emerald-700">"Approved"</strong>. Till then it will remain <strong class="text-amber-700">"Pending"</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
+        <div id="modalProgressBar" class="h-full bg-gradient-to-r from-amber-500 via-purple-600 to-emerald-500 rounded-full w-0 transition-all duration-1000 ease-out"></div>
+      </div>
+      
+      <p class="text-[11px] text-stone-400 font-mono">Saving order & dispatching for admin confirmation...</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- Client-side Logic for Dependent Dropdowns, Geolocation, and Payment Switcher -->
+<script>
+  (function () {
+    let bdData = { divisions: [] };
+
+    const divSelect = document.getElementById('divisionSelect');
+    const distSelect = document.getElementById('districtSelect');
+    const upaSelect = document.getElementById('upazilaSelect');
+    const areaInput = document.getElementById('areaInput');
+
+    const btnGeo = document.getElementById('btnGeoLocate');
+    const geoIcon = document.getElementById('geoIcon');
+    const geoText = document.getElementById('geoBtnText');
+    const geoBanner = document.getElementById('geoStatusBanner');
+
+    const paymentRadios = document.querySelectorAll('.payment-radio');
+    const codNotice = document.getElementById('codNotice');
+    const manualDrawer = document.getElementById('manualPayDrawer');
+    const manualBadge = document.getElementById('manualMethodBadge');
+    const manualText = document.getElementById('manualInstructionsText');
+    const trxInput = document.getElementById('trxIdInput');
+
+    // 1. Fetch locations JSON
+    fetch('/checkout/locations')
+      .then(res => res.json())
+      .then(data => {
+        bdData = data;
+      })
+      .catch(err => console.error('Failed to load locations JSON:', err));
+
+    // 2. Division change handler -> populate Districts
+    divSelect.addEventListener('change', function () {
+      const selectedDivName = this.value;
+      distSelect.innerHTML = '<option value="">Select District</option>';
+      upaSelect.innerHTML = '<option value="">Select Upazila</option>';
+      upaSelect.disabled = true;
+
+      if (!selectedDivName) {
+        distSelect.disabled = true;
+        return;
+      }
+
+      const divisionObj = (bdData.divisions || []).find(d => d.name.toLowerCase() === selectedDivName.toLowerCase());
+      if (divisionObj && divisionObj.districts) {
+        divisionObj.districts.forEach(dist => {
+          const opt = document.createElement('option');
+          opt.value = dist.name;
+          opt.textContent = dist.name;
+          distSelect.appendChild(opt);
+        });
+        distSelect.disabled = false;
+      } else {
+        distSelect.disabled = true;
+      }
+    });
+
+    // 3. District change handler -> populate Upazilas
+    distSelect.addEventListener('change', function () {
+      const selectedDivName = divSelect.value;
+      const selectedDistName = this.value;
+      upaSelect.innerHTML = '<option value="">Select Upazila</option>';
+
+      if (!selectedDistName) {
+        upaSelect.disabled = true;
+        return;
+      }
+
+      const divisionObj = (bdData.divisions || []).find(d => d.name.toLowerCase() === selectedDivName.toLowerCase());
+      if (divisionObj) {
+        const districtObj = (divisionObj.districts || []).find(dist => dist.name.toLowerCase() === selectedDistName.toLowerCase());
+        if (districtObj && districtObj.upazilas) {
+          districtObj.upazilas.forEach(upa => {
+            const opt = document.createElement('option');
+            opt.value = upa;
+            opt.textContent = upa;
+            upaSelect.appendChild(opt);
+          });
+          upaSelect.disabled = false;
+          return;
+        }
+      }
+      upaSelect.disabled = true;
+      updateDeliveryAndTotal();
+    });
+
+    // 3b. Delivery Fee & Coupon Calculations
+    const DHAKA_UPAZILAS_LIST = ["Dhanmondi", "Gulshan", "Banani", "Uttara", "Mirpur", "Mohammadpur", "Motijheel", "Tejgaon", "Savar", "Keraniganj", "Dhamrai", "Nawabganj", "Dohar"];
+    const subtotalAmount = <%= Number(subtotal) %>;
+    let currentDeliveryCharge = 160;
+    let isCouponFree = false;
+    let verifiedCouponCode = '';
+
+    const deliveryBadge = document.getElementById('deliveryZoneBadge');
+    const deliveryText = document.getElementById('deliveryChargeText');
+    const grandTotalText = document.getElementById('grandTotalDisplay');
+    const codAmountEl = document.getElementById('codNoticeAmount');
+    const manualDrawerAmountEl = document.getElementById('manualDrawerAmount');
+
+    const couponInput = document.getElementById('couponCodeInput');
+    const btnApplyCoupon = document.getElementById('btnApplyCoupon');
+    const btnClearCoupon = document.getElementById('btnClearCoupon');
+    const couponMsg = document.getElementById('couponStatusMessage');
+    const couponRow = document.getElementById('couponDiscountRow');
+    const appliedCouponLabel = document.getElementById('appliedCouponLabel');
+
+    function isUpazilaDhaka(upazilaName) {
+      if (!upazilaName) return false;
+      const clean = upazilaName.trim().toLowerCase();
+      return DHAKA_UPAZILAS_LIST.some(u => u.toLowerCase() === clean);
+    }
+
+    function updateDeliveryAndTotal() {
+      const selectedUpa = (upaSelect && upaSelect.value) ? upaSelect.value : '';
+      const isDhaka = isUpazilaDhaka(selectedUpa);
+      const baseCharge = isDhaka ? 70 : 160;
+
+      if (deliveryBadge) {
+        if (isDhaka) {
+          deliveryBadge.innerHTML = '<span class="text-purple-700 font-bold">Inside Dhaka (৳70)</span>';
+        } else if (selectedUpa) {
+          deliveryBadge.innerHTML = '<span class="text-stone-600 font-bold">Outside Dhaka (৳160)</span>';
+        } else {
+          deliveryBadge.innerHTML = '<span class="text-stone-400">Standard rate (৳160)</span>';
+        }
+      }
+
+      if (isCouponFree) {
+        currentDeliveryCharge = 0;
+        if (deliveryText) {
+          deliveryText.innerHTML = `<span class="line-through text-stone-400 text-xs mr-1 font-normal">৳${baseCharge}</span><span class="text-emerald-700 font-bold">৳0</span>`;
+        }
+      } else {
+        currentDeliveryCharge = baseCharge;
+        if (deliveryText) {
+          deliveryText.textContent = `৳${baseCharge}`;
+        }
+      }
+
+      const grandTotal = subtotalAmount + currentDeliveryCharge;
+      if (grandTotalText) {
+        grandTotalText.textContent = `৳${grandTotal.toLocaleString()}`;
+      }
+      if (codAmountEl) {
+        codAmountEl.textContent = `৳${grandTotal.toLocaleString()}`;
+      }
+      if (manualDrawerAmountEl) {
+        manualDrawerAmountEl.textContent = `৳${grandTotal.toLocaleString()}`;
+      }
+    }
+
+    if (upaSelect) {
+      upaSelect.addEventListener('change', updateDeliveryAndTotal);
+    }
+
+    if (btnApplyCoupon && couponInput) {
+      btnApplyCoupon.addEventListener('click', async function () {
+        const code = (couponInput.value || '').trim();
+        if (!code) {
+          showCouponStatus('Please enter a coupon code.', 'error');
+          return;
+        }
+
+        btnApplyCoupon.disabled = true;
+        btnApplyCoupon.textContent = '...';
+
+        try {
+          const res = await fetch('/checkout/validate-coupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+          });
+          const data = await res.json();
+
+          if (data.valid) {
+            isCouponFree = true;
+            verifiedCouponCode = data.code;
+            couponInput.value = data.code;
+            couponInput.readOnly = true;
+            btnClearCoupon.classList.remove('hidden');
+            btnApplyCoupon.classList.add('hidden');
+            couponRow.classList.remove('hidden');
+            couponRow.classList.add('flex');
+            appliedCouponLabel.textContent = `Coupon "${data.code}" Applied`;
+            showCouponStatus('🎉 ' + data.message, 'success');
+            updateDeliveryAndTotal();
+          } else {
+            isCouponFree = false;
+            showCouponStatus('✕ ' + (data.message || 'Invalid coupon code.'), 'error');
+            updateDeliveryAndTotal();
+          }
+        } catch (err) {
+          showCouponStatus('Error verifying coupon. Please retry.', 'error');
+        } finally {
+          btnApplyCoupon.disabled = false;
+          btnApplyCoupon.textContent = 'Apply';
+        }
+      });
+
+      btnClearCoupon.addEventListener('click', function () {
+        isCouponFree = false;
+        verifiedCouponCode = '';
+        couponInput.value = '';
+        couponInput.readOnly = false;
+        btnClearCoupon.classList.add('hidden');
+        btnApplyCoupon.classList.remove('hidden');
+        couponRow.classList.add('hidden');
+        couponRow.classList.remove('flex');
+        couponMsg.classList.add('hidden');
+        updateDeliveryAndTotal();
+      });
+    }
+
+    function showCouponStatus(msg, type) {
+      if (!couponMsg) return;
+      couponMsg.classList.remove('hidden', 'bg-rose-50', 'text-rose-700', 'border-rose-200', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+      if (type === 'success') {
+        couponMsg.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+      } else {
+        couponMsg.classList.add('bg-rose-50', 'text-rose-700', 'border', 'border-rose-200');
+      }
+      couponMsg.textContent = msg;
+    }
+
+    // Initialize delivery and total calculation on load
+    updateDeliveryAndTotal();
+
+    // 4. HTML5 Geolocation + OpenStreetMap Nominatim Reverse Geocoding
+    if (btnGeo) {
+      btnGeo.addEventListener('click', function () {
+        if (!navigator.geolocation) {
+          showGeoStatus('Geolocation is not supported by your browser.', 'error');
+          return;
+        }
+
+        geoText.textContent = 'Detecting coordinates...';
+        geoIcon.classList.add('animate-spin');
+        btnGeo.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(
+          async function (position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            try {
+              // Free OpenStreetMap Nominatim reverse geocode
+              const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`;
+              const response = await fetch(nominatimUrl, {
+                headers: { 'Accept-Language': 'en' }
+              });
+
+              if (!response.ok) throw new Error('Geocoding service unavailable');
+              const geoData = await response.json();
+              const addr = geoData.address || {};
+
+              // Extract all location tokens comprehensively from Nominatim
+              const allGeoText = [
+                addr.county,
+                addr.suburb,
+                addr.city_district,
+                addr.town,
+                addr.village,
+                addr.neighbourhood,
+                addr.quarter,
+                addr.borough,
+                addr.municipality,
+                addr.city,
+                addr.state_district,
+                addr.state,
+                geoData.display_name
+              ].filter(Boolean).join(' ').toLowerCase();
+
+              // Helper functions to populate and set dropdowns synchronously without race conditions
+              function syncPopulateDistricts(divObj, selectedDistName) {
+                distSelect.innerHTML = '<option value="">Select District</option>';
+                if (divObj && divObj.districts) {
+                  divObj.districts.forEach(dist => {
+                    const opt = document.createElement('option');
+                    opt.value = dist.name;
+                    opt.textContent = dist.name;
+                    if (selectedDistName && dist.name.toLowerCase() === selectedDistName.toLowerCase()) {
+                      opt.selected = true;
+                    }
+                    distSelect.appendChild(opt);
+                  });
+                  distSelect.disabled = false;
+                }
+              }
+
+              function syncPopulateUpazilas(distObj, selectedUpaName) {
+                upaSelect.innerHTML = '<option value="">Select Upazila</option>';
+                if (distObj && distObj.upazilas) {
+                  distObj.upazilas.forEach(upa => {
+                    const opt = document.createElement('option');
+                    opt.value = upa;
+                    opt.textContent = upa;
+                    if (selectedUpaName && upa.toLowerCase() === selectedUpaName.toLowerCase()) {
+                      opt.selected = true;
+                    }
+                    upaSelect.appendChild(opt);
+                  });
+                  upaSelect.disabled = false;
+                }
+              }
+
+              // 1. Identify Division
+              let matchedDiv = null;
+              if (bdData.divisions) {
+                matchedDiv = bdData.divisions.find(d => allGeoText.includes(d.name.toLowerCase()));
+              }
+
+              // 2. Identify District
+              let matchedDist = null;
+              if (matchedDiv && matchedDiv.districts) {
+                matchedDist = matchedDiv.districts.find(d => allGeoText.includes(d.name.toLowerCase()));
+              }
+              // If district not found in identified division, search across all divisions
+              if (!matchedDist && bdData.divisions) {
+                for (const div of bdData.divisions) {
+                  const foundDist = (div.districts || []).find(d => allGeoText.includes(d.name.toLowerCase()));
+                  if (foundDist) {
+                    matchedDiv = div;
+                    matchedDist = foundDist;
+                    break;
+                  }
+                }
+              }
+
+              // 3. Identify Upazila (sorted by longest name first to avoid partial conflicts)
+              let matchedUpa = null;
+              if (matchedDist && matchedDist.upazilas) {
+                const sortedUpas = [...matchedDist.upazilas].sort((a, b) => b.length - a.length);
+                matchedUpa = sortedUpas.find(u => allGeoText.includes(u.toLowerCase()));
+              }
+
+              // If upazila not found in matched district, check all districts in the division
+              if (!matchedUpa && matchedDiv && matchedDiv.districts) {
+                for (const dist of matchedDiv.districts) {
+                  const sortedUpas = [...(dist.upazilas || [])].sort((a, b) => b.length - a.length);
+                  const foundUpa = sortedUpas.find(u => allGeoText.includes(u.toLowerCase()));
+                  if (foundUpa) {
+                    matchedDist = dist;
+                    matchedUpa = foundUpa;
+                    break;
+                  }
+                }
+              }
+
+              // If still not found, search all upazilas across entire Bangladesh locations dataset
+              if (!matchedUpa && bdData.divisions) {
+                for (const div of bdData.divisions) {
+                  for (const dist of (div.districts || [])) {
+                    const sortedUpas = [...(dist.upazilas || [])].sort((a, b) => b.length - a.length);
+                    const foundUpa = sortedUpas.find(u => allGeoText.includes(u.toLowerCase()));
+                    if (foundUpa) {
+                      matchedDiv = div;
+                      matchedDist = dist;
+                      matchedUpa = foundUpa;
+                      break;
+                    }
+                  }
+                  if (matchedUpa) break;
+                }
+              }
+
+              // Default fallback to Dhaka division & district if in Dhaka area
+              if (!matchedDiv && allGeoText.includes('dhaka') && bdData.divisions) {
+                matchedDiv = bdData.divisions.find(d => d.name.toLowerCase() === 'dhaka');
+                if (matchedDiv) {
+                  matchedDist = matchedDiv.districts.find(d => d.name.toLowerCase() === 'dhaka');
+                }
+              }
+
+              // Apply detected Division, District, and Upazila
+              if (matchedDiv) {
+                divSelect.value = matchedDiv.name;
+                syncPopulateDistricts(matchedDiv, matchedDist ? matchedDist.name : null);
+              }
+              if (matchedDist) {
+                distSelect.value = matchedDist.name;
+                syncPopulateUpazilas(matchedDist, matchedUpa || null);
+              }
+              if (matchedUpa) {
+                upaSelect.value = matchedUpa;
+              }
+
+              // Recalculate delivery fee immediately based on detected upazila
+              updateDeliveryAndTotal();
+
+              // Auto-fill area text box with specific road/neighbourhood details
+              const roadTokens = [addr.house_number, addr.road, addr.neighbourhood, addr.suburb].filter(Boolean);
+              if (roadTokens.length > 0) {
+                areaInput.value = roadTokens.join(', ');
+              } else if (geoData.display_name) {
+                areaInput.value = geoData.display_name.split(',').slice(0, 3).join(', ');
+              }
+
+              const detectedDetails = [matchedUpa, matchedDist ? matchedDist.name : null, matchedDiv ? matchedDiv.name : null].filter(Boolean).join(', ');
+              showGeoStatus(`Location identified: ${detectedDetails || 'Coordinates populated'}`, 'success');
+            } catch (apiErr) {
+              console.warn('Reverse geocoding error:', apiErr);
+              showGeoStatus(`Coordinates detected (${lat.toFixed(3)}, ${lon.toFixed(3)}). Please confirm dropdowns.`, 'warning');
+            } finally {
+              geoText.textContent = 'Identify My Location';
+              geoIcon.classList.remove('animate-spin');
+              btnGeo.disabled = false;
+            }
+          },
+          function (err) {
+            let msg = 'Unable to retrieve location. Please select manually.';
+            if (err.code === 1) msg = 'Location access was denied. Please select manually.';
+            else if (err.code === 2) msg = 'Position unavailable. Please select manually.';
+            showGeoStatus(msg, 'error');
+            geoText.textContent = 'Identify My Location';
+            geoIcon.classList.remove('animate-spin');
+            btnGeo.disabled = false;
+          },
+          { timeout: 10000, enableHighAccuracy: true }
+        );
+      });
+    }
+
+    function showGeoStatus(message, type) {
+      if (!geoBanner) return;
+      geoBanner.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200', 'bg-rose-50', 'text-rose-800', 'border-rose-200', 'bg-amber-50', 'text-amber-800', 'border-amber-200');
+      
+      if (type === 'success') {
+        geoBanner.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+      } else if (type === 'warning') {
+        geoBanner.classList.add('bg-amber-50', 'text-amber-800', 'border', 'border-amber-200');
+      } else {
+        geoBanner.classList.add('bg-rose-50', 'text-rose-800', 'border', 'border-rose-200');
+      }
+      geoBanner.textContent = message;
+    }
+
+    // 5. Payment Method Switcher (COD vs bKash / Nagad / Bank)
+    const paymentInstructions = {
+      'bKash': {
+        badge: '<img src="/images/payments/bkash.png" alt="bKash" class="w-3.5 h-3.5 rounded object-contain shrink-0"><span>bKash Merchant / Personal</span>',
+        html: `<p>1. Open your <strong>bKash app</strong> or dial <strong>*247#</strong>.</p>
+               <p>2. Select <strong>Send Money</strong> to Personal Number: <strong class="font-mono text-purple-900 bg-purple-100 px-2 py-0.5 rounded text-xs select-all">01624686788</strong>.</p>
+               <p>3. Enter total amount: <strong>৳<%= Number(subtotal).toLocaleString() %></strong>, reference: <strong>Boutique</strong>.</p>
+               <p>4. Enter your bKash PIN to confirm transaction and copy the <strong>Transaction ID (TrxID)</strong>.</p>`
+      },
+      'Nagad': {
+        badge: '<img src="/images/payments/nagad.jpg" alt="Nagad" class="w-3.5 h-3.5 rounded object-contain shrink-0"><span>Nagad Personal</span>',
+        html: `<p>1. Open your <strong>Nagad app</strong> or dial <strong>*167#</strong>.</p>
+               <p>2. Select <strong>Send Money</strong> to Number: <strong class="font-mono text-orange-900 bg-orange-100 px-2 py-0.5 rounded text-xs select-all">01624686788</strong>.</p>
+               <p>3. Enter total amount: <strong>৳<%= Number(subtotal).toLocaleString() %></strong>.</p>
+               <p>4. Confirm payment with PIN and copy the <strong>Transaction ID (TrxID)</strong>.</p>`
+      },
+      'Online Bank Transfer': {
+        badge: '<img src="/images/payments/banking.jpg" alt="Banking" class="w-3.5 h-3.5 rounded object-contain shrink-0"><span>Direct Bank Wire</span>',
+        html: `<div class="p-2.5 rounded bg-white border border-stone-200 space-y-1 font-mono text-[11px]">
+                 <div><span class="text-stone-500">Bank:</span> Eastern Bank Ltd (EBL)</div>
+                 <div><span class="text-stone-500">A/C Name:</span> Bunonmela Atelier Luxury Ltd</div>
+                 <div><span class="text-stone-500">A/C Number:</span> <strong class="text-stone-900 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 select-all">1681050127422</strong></div>
+                 <div><span class="text-stone-500">Branch / Routing:</span> Gulshan Branch / 090271234</div>
+               </div>
+               <p class="mt-1">Enter your online banking transfer reference or deposit slip number below.</p>`
+      }
+    };
+
+    paymentRadios.forEach(radio => {
+      radio.addEventListener('change', function () {
+        // Update styling of cards
+        document.querySelectorAll('.payment-card-label').forEach(label => {
+          label.classList.remove('border-purple-600', 'bg-purple-50/50');
+          label.classList.add('border-stone-200', 'bg-white');
+          const indicator = label.querySelector('.radio-indicator');
+          if (indicator) {
+            indicator.classList.remove('border-purple-600', 'bg-purple-600');
+            indicator.classList.add('border-stone-300');
+            indicator.querySelector('div').classList.remove('bg-white');
+            indicator.querySelector('div').classList.add('bg-transparent');
+          }
+        });
+
+        const activeLabel = this.closest('.payment-card-label');
+        if (activeLabel) {
+          activeLabel.classList.add('border-purple-600', 'bg-purple-50/50');
+          activeLabel.classList.remove('border-stone-200', 'bg-white');
+          const indicator = activeLabel.querySelector('.radio-indicator');
+          if (indicator) {
+            indicator.classList.add('border-purple-600', 'bg-purple-600');
+            indicator.classList.remove('border-stone-300');
+            indicator.querySelector('div').classList.add('bg-white');
+            indicator.querySelector('div').classList.remove('bg-transparent');
+          }
+        }
+
+        const selected = this.value;
+        if (selected === 'Cash on Delivery') {
+          codNotice.classList.remove('hidden');
+          manualDrawer.classList.add('hidden');
+          trxInput.removeAttribute('required');
+        } else {
+          codNotice.classList.add('hidden');
+          manualDrawer.classList.remove('hidden');
+          trxInput.setAttribute('required', 'required');
+
+          const config = paymentInstructions[selected];
+          if (config) {
+            manualBadge.innerHTML = config.badge;
+            manualText.innerHTML = config.html;
+          }
+        }
+      });
+    });
+
+    // 6. Form submission modal: "Wait for Admin Confirmation"
+    const checkoutForm = document.getElementById('checkoutForm');
+    const confirmModal = document.getElementById('orderConfirmationModal');
+    const modalProgressBar = document.getElementById('modalProgressBar');
+    let isSubmitting = false;
+
+    if (checkoutForm && confirmModal) {
+      checkoutForm.addEventListener('submit', function (e) {
+        if (isSubmitting) return;
+        if (!checkoutForm.checkValidity()) return;
+
+        // Show popup
+        e.preventDefault();
+        confirmModal.classList.remove('opacity-0', 'pointer-events-none');
+        const modalBox = confirmModal.querySelector('div');
+        if (modalBox) {
+          modalBox.classList.remove('scale-95');
+          modalBox.classList.add('scale-100');
+        }
+        if (modalProgressBar) {
+          setTimeout(() => { modalProgressBar.style.width = '100%'; }, 50);
+        }
+
+        isSubmitting = true;
+        const btnSubmit = document.getElementById('btnSubmitOrder');
+        if (btnSubmit) {
+          btnSubmit.disabled = true;
+          btnSubmit.classList.add('opacity-75', 'cursor-not-allowed');
+        }
+
+        // Allow customer to see the confirmation popup for 1.8s then submit form
+        setTimeout(() => {
+          checkoutForm.submit();
+        }, 1800);
+      });
+    }
+
+  })();
+</script>
+
+<%- include('partials/footer') %>

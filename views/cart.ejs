@@ -1,0 +1,138 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main class="pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto min-h-screen">
+  
+  <!-- Breadcrumb -->
+  <div class="mb-6 flex items-center gap-2 text-xs text-stone-600">
+    <a href="/" class="hover:text-stone-900 transition">Home</a>
+    <span>/</span>
+    <span class="text-stone-700 font-medium">Shopping Bag</span>
+  </div>
+
+  <div class="flex items-center justify-between mb-8 pb-4 border-b border-stone-200">
+    <div>
+      <span class="text-[10px] uppercase tracking-[0.25em] text-brand-plum font-semibold">Your Selection</span>
+      <h1 class="font-heading text-3xl font-medium text-brand-dark">Bespoke Shopping Bag</h1>
+    </div>
+    <span class="text-xs text-stone-600">
+      <% const count = items ? items.reduce((acc, i) => acc + i.quantity, 0) : 0; %>
+      <%= count %> Item<%= count === 1 ? '' : 's' %>
+    </span>
+  </div>
+
+  <% if (error) { %>
+    <div class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs"><%= error %></div>
+  <% } %>
+
+  <% if (items && items.length > 0) { %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      
+      <!-- Cart Items List -->
+      <div class="lg:col-span-2 space-y-4">
+        <% items.forEach(function(item) { %>
+          <div class="glass rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 border border-stone-200/70">
+            <!-- Product Thumb -->
+            <a href="/products/<%= item.product_id %>" class="w-24 h-28 shrink-0 rounded-xl overflow-hidden bg-stone-100 relative group">
+              <img src="<%= item.image_url %>" alt="<%= item.title %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            </a>
+
+            <!-- Info & Controls -->
+            <div class="flex-grow w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="space-y-1">
+                <span class="text-[9px] font-mono text-stone-600 uppercase">SKU: BNM-00<%= item.product_id %></span>
+                <a href="/products/<%= item.product_id %>" class="block font-heading text-base font-medium text-brand-dark hover:text-brand-plum transition">
+                  <%= item.title %>
+                </a>
+                <span class="text-sm font-bold text-stone-900">৳<%= Number(item.price).toLocaleString() %></span>
+              </div>
+
+              <!-- Quantity & Total & Remove -->
+              <div class="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto">
+                <form action="/cart/update" method="POST" class="flex items-center border border-stone-300 rounded-full bg-stone-50 px-2 py-0.5">
+                  <input type="hidden" name="cartId" value="<%= item.cart_id %>">
+                  <button type="submit" name="quantity" value="<%= item.quantity - 1 %>" class="w-6 h-6 flex items-center justify-center text-stone-600 hover:text-brand-dark text-sm font-bold">-</button>
+                  <span class="w-8 text-center text-xs font-bold text-brand-dark"><%= item.quantity %></span>
+                  <button type="submit" name="quantity" value="<%= item.quantity + 1 %>" class="w-6 h-6 flex items-center justify-center text-stone-600 hover:text-brand-dark text-sm font-bold">+</button>
+                </form>
+
+                <div class="text-right min-w-[70px]">
+                  <span class="block font-heading text-base font-bold text-brand-dark">
+                    ৳<%= Number(item.price * item.quantity).toLocaleString() %>
+                  </span>
+                </div>
+
+                <form action="/cart/remove" method="POST">
+                  <input type="hidden" name="cartId" value="<%= item.cart_id %>">
+                  <button type="submit" class="text-stone-400 hover:text-rose-600 transition p-1.5" title="Remove item">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+
+        <div class="pt-3">
+          <a href="/#featured" class="inline-flex items-center gap-2 text-xs font-semibold text-brand-plum hover:underline">
+            &larr; Continue Exploring Catalog
+          </a>
+        </div>
+      </div>
+
+      <!-- Order Summary Card -->
+      <div class="glass rounded-2xl p-6 border border-stone-200/80 space-y-5 sticky top-24">
+        <h3 class="font-heading text-lg font-bold text-brand-dark">Order Summary</h3>
+
+        <div class="space-y-3 text-xs text-stone-600 pb-4 border-b border-stone-200">
+          <div class="flex justify-between">
+            <span>Subtotal</span>
+            <span class="font-bold text-brand-dark">৳<%= Number(subtotal).toLocaleString() %></span>
+          </div>
+          <div class="flex justify-between">
+            <span>Insured Courier Delivery</span>
+            <span class="text-emerald-700 font-semibold uppercase">Complimentary</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Signature Luxury Box</span>
+            <span class="text-emerald-700 font-semibold uppercase">Included</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-baseline pt-1">
+          <span class="font-heading text-base font-bold text-brand-dark">Grand Total</span>
+          <span class="font-heading text-2xl font-bold text-brand-dark">৳<%= Number(subtotal).toLocaleString() %></span>
+        </div>
+
+        <div class="pt-2">
+          <a href="/checkout" class="btn-liquid w-full justify-center py-4 text-sm font-semibold shadow-xl text-white" style="background: linear-gradient(135deg, #3B0764 0%, #7E22CE 100%);">
+            <span>Proceed to Secure Checkout</span>
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+        </div>
+
+        <div class="text-[10px] text-stone-500 text-center flex items-center justify-center gap-1.5 pt-1">
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>Guaranteed Safe & Encrypted Checkout</span>
+        </div>
+      </div>
+
+    </div>
+  <% } else { %>
+    <div class="text-center py-20 glass rounded-3xl p-8 max-w-lg mx-auto border border-stone-200">
+      <div class="w-16 h-16 rounded-full bg-purple-50 text-purple-900 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      </div>
+      <h2 class="font-heading text-2xl font-bold text-brand-dark mb-2">Your Shopping Bag is Empty</h2>
+      <p class="text-xs text-stone-600 mb-6 max-w-xs mx-auto">
+        Discover our bespoke collections of handwoven silks, gowns, and couture ensembles.
+      </p>
+      <a href="/#featured" class="btn-liquid inline-flex" style="background:#3B0764;color:#fff;">
+        Explore Collections
+      </a>
+    </div>
+  <% } %>
+
+</main>
+
+<%- include('partials/footer') %>

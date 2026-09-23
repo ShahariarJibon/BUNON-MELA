@@ -1,0 +1,76 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-brand-soft via-white to-white">
+  
+  <div class="auth-card w-full max-w-sm p-6 sm:p-8 animate-fade-in">
+    
+    <!-- Brand -->
+    <div class="text-center mb-6">
+      <a href="/" class="inline-block">
+        <span class="font-heading text-xl tracking-[0.2em] font-bold text-brand-dark">BUNONMELA</span>
+      </a>
+      <p class="text-[10px] uppercase tracking-[0.2em] text-brand-accent/60 font-medium mt-0.5">Luxury Boutique</p>
+    </div>
+
+    <% if (typeof redirect !== 'undefined' && redirect && redirect.startsWith('/admin')) { %>
+      <div class="mb-5 p-3.5 rounded-xl bg-purple-50/90 border border-purple-200/80 text-purple-900 text-xs flex items-start gap-2.5">
+        <svg class="w-4 h-4 text-purple-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        <div>
+          <strong class="font-semibold block text-[11px] uppercase tracking-wider text-purple-950">Executive Atelier Access</strong>
+          Administrator authentication required to access the Admin Panel.
+        </div>
+      </div>
+    <% } else if (typeof redirect !== 'undefined' && redirect && redirect !== '/') { %>
+      <div class="mb-5 p-3.5 rounded-xl bg-purple-50/90 border border-purple-200/80 text-purple-900 text-xs flex items-start gap-2.5">
+        <svg class="w-4 h-4 text-purple-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+          <strong class="font-semibold block text-[11px] uppercase tracking-wider text-purple-950">Authentication Required</strong>
+          Please sign in to proceed with your shopping cart and checkout.
+        </div>
+      </div>
+    <% } %>
+
+    <h2 class="font-heading text-xl font-medium text-brand-dark text-center mb-1">Welcome Back</h2>
+    <p class="text-xs text-stone-400 text-center mb-6">Sign in with your email and password</p>
+
+    <% if (error) { %>
+      <div class="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 text-xs"><%= error %></div>
+    <% } %>
+
+    <form action="/auth/login" method="POST" class="space-y-4">
+      <input type="hidden" name="redirect" value="<%= typeof redirect !== 'undefined' ? redirect : '' %>">
+      <input type="hidden" name="action" value="<%= typeof action !== 'undefined' ? action : '' %>">
+      <input type="hidden" name="productId" value="<%= typeof productId !== 'undefined' ? productId : '' %>">
+      <input type="hidden" name="quantity" value="<%= typeof quantity !== 'undefined' ? quantity : '1' %>">
+
+      <div>
+        <label class="block text-[10px] uppercase tracking-wider text-stone-500 font-semibold mb-1">Email</label>
+        <input name="email" type="email" required autocomplete="email" class="input-luxury" placeholder="you@example.com">
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-wider text-stone-500 font-semibold mb-1">Password</label>
+        <input name="password" type="password" required autocomplete="current-password" class="input-luxury" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn-liquid w-full justify-center" style="background:#3B0764;color:#fff;">
+        Sign In
+      </button>
+    </form>
+
+    <div class="mt-5 text-center">
+      <p class="text-xs text-stone-400">
+        Don't have an account? 
+        <a href="/auth/signup?redirect=<%= encodeURIComponent(typeof redirect !== 'undefined' ? redirect : '') %>&action=<%= typeof action !== 'undefined' ? action : '' %>&productId=<%= typeof productId !== 'undefined' ? productId : '' %>&quantity=<%= typeof quantity !== 'undefined' ? quantity : '1' %>" class="text-brand-accent font-semibold hover:underline">Create one</a>
+      </p>
+    </div>
+
+    <div class="mt-4 p-3 rounded-lg bg-purple-50/80 border border-purple-200/60 text-[10px] text-purple-900 text-center flex items-center justify-center gap-1.5">
+      <svg class="w-3.5 h-3.5 text-purple-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+      <span>Encrypted, authentic client credentials preserved securely.</span>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

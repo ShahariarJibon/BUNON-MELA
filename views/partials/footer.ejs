@@ -1,0 +1,90 @@
+<!-- Minimal Footer -->
+<footer class="bg-stone-900 text-stone-400 mt-auto relative z-10">
+
+  <!-- Newsletter -->
+  <div class="border-b border-stone-800 bg-brand-dark text-white py-10 px-4">
+    <div class="max-w-lg mx-auto text-center">
+      <span class="text-[10px] uppercase tracking-[0.3em] text-brand-light font-semibold block mb-1">Exclusive Access</span>
+      <h3 class="font-heading text-2xl text-white font-medium mb-4">The Bunonmela Gazette</h3>
+      <form class="flex gap-2 max-w-sm mx-auto" onsubmit="event.preventDefault(); if (window.showLuxuryToast) showLuxuryToast('VIP Atelier Access', 'Welcome to the Bunonmela Gazette VIP circle.'); this.reset();">
+        <input type="email" placeholder="Your email" required class="flex-1 px-3.5 py-2.5 bg-white/10 border border-white/15 rounded-full text-white placeholder-stone-400 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400 transition">
+        <button type="submit" class="btn-liquid btn-liquid-sm" style="background:#7E22CE; color:#fff;">Join</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer Grid -->
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div class="col-span-2 md:col-span-1">
+        <span class="font-heading text-lg tracking-[0.15em] text-white font-bold block mb-2">BUNONMELA</span>
+        <p class="text-xs text-stone-500 leading-relaxed">Master artisans weaving the world's finest silks and couture.</p>
+      </div>
+      <div>
+        <h4 class="text-[10px] uppercase tracking-widest text-white font-semibold mb-3">Collections</h4>
+        <ul class="space-y-2 text-xs text-stone-500">
+          <li><a href="/#featured" class="hover:text-brand-light transition">Silk Sarees</a></li>
+          <li><a href="/#featured" class="hover:text-brand-light transition">Decorated Bags</a></li>
+          <li><a href="/#featured" class="hover:text-brand-light transition">Haute Couture</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-[10px] uppercase tracking-widest text-white font-semibold mb-3">Account</h4>
+        <ul class="space-y-2 text-xs text-stone-500">
+          <li><a href="/profile" class="hover:text-brand-light transition">My Profile & Orders</a></li>
+          <li><a href="/cart" class="hover:text-brand-light transition">Shopping Bag</a></li>
+          <li><a href="/admin" class="hover:text-brand-light transition text-purple-400 font-semibold">Admin Suite</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-8 pt-6 border-t border-stone-800 text-center text-[10px] text-stone-600">
+      &copy; <%= new Date().getFullYear() %> Bunonmela Luxury Couture. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════
+     UNIVERSAL IN-WEBSITE CONFIRMATION POPUP MODAL
+     (Replaces ALL native browser confirm() dialogs)
+     ═══════════════════════════════════════════ -->
+<div id="universalConfirmModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+  <div class="glass-strong bg-white dark:bg-zinc-900 border border-purple-200 dark:border-zinc-700 w-full max-w-sm p-6 rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 space-y-4">
+    <div class="flex items-start gap-3">
+      <div id="confirmModalIcon" class="w-10 h-10 rounded-full bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-300 flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <div>
+        <h3 id="confirmModalTitle" class="font-heading text-base font-bold text-stone-900 dark:text-white">Confirmation</h3>
+        <p id="confirmModalDesc" class="text-xs text-stone-500 dark:text-zinc-400 mt-1 leading-relaxed">Please confirm your action.</p>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2.5 pt-3 border-t border-stone-200 dark:border-zinc-800">
+      <button type="button" id="confirmModalCancelBtn" class="px-4 py-2 rounded-full border border-stone-300 dark:border-zinc-700 text-xs font-bold text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 transition">
+        Cancel
+      </button>
+      <button type="button" id="confirmModalActionBtn" class="btn-liquid px-5 py-2 text-xs font-bold text-white shadow-md" style="background:#3B0764; color:#fff;">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     UNIVERSAL IN-WEBSITE TOAST POPUP
+     (Replaces ALL native browser alert() dialogs)
+     ═══════════════════════════════════════════ -->
+<div id="universalToast" class="fixed bottom-6 right-6 z-[100] transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+  <div class="glass-strong bg-white/95 dark:bg-zinc-900 border border-purple-200 dark:border-zinc-700 text-stone-900 dark:text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+    <div id="universalToastIcon" class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+    </div>
+    <div>
+      <h4 id="universalToastTitle" class="text-xs font-bold text-stone-900 dark:text-white">Notification</h4>
+      <p id="universalToastMsg" class="text-[11px] text-stone-500 dark:text-zinc-400">Action completed successfully.</p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

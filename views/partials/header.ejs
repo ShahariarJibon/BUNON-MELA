@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title><%= typeof title !== 'undefined' ? title : 'Bunonmela | Luxury Boutique Couture' %></title>
+
+  <!-- Fonts: Playfair Display + Lato -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#3B0764',
+              plum: '#581C87',
+              accent: '#7E22CE',
+              soft: '#FAF5FF',
+              light: '#F3E8FF',
+              border: '#E9D5FF',
+              mercury: '#c8cfe0'
+            }
+          },
+          fontFamily: {
+            heading: ['"Playfair Display"', 'Georgia', 'serif'],
+            body: ['"Lato"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="/css/style.css">
+  <% if (typeof title === 'undefined' || !title.includes('Admin')) { %>
+    <script src="/js/mesh-gradient-hero.js" defer></script>
+  <% } %>
+</head>
+<body class="bg-white text-stone-800 font-body antialiased min-h-screen flex flex-col selection:bg-brand-light selection:text-brand-dark relative">
+
+  <% if (typeof title === 'undefined' || !title.includes('Admin')) { %>
+    <!-- Full-Website Fixed Ambient Mesh Gradient Canvas (for storefront & customer pages) -->
+    <canvas id="shader-canvas" class="fixed inset-0 w-full h-full pointer-events-none" style="opacity: 0.5; z-index: 0;"></canvas>
+  <% } %>

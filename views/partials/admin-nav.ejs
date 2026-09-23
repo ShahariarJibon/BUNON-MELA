@@ -1,0 +1,565 @@
+<!-- Admin Top Bar with Apple Liquid Glass Effect & Snappy Moving Capsule Segment -->
+<header id="adminHeader" class="admin-topbar sticky top-0 z-40 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-18 py-2.5 gap-4 lg:gap-8">
+      
+      <!-- Brand & Admin Badge with Apple Liquid Glass Touch -->
+      <a href="/admin" class="flex items-center space-x-3 shrink-0 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-brand-plum flex items-center justify-center text-amber-300 shrink-0 text-sm font-bold shadow-md shadow-purple-950/30 group-hover:scale-105 transition-transform duration-200">
+          B
+        </div>
+        <div class="min-w-0 hidden sm:block">
+          <span class="brand-logo-text block font-heading text-sm sm:text-base tracking-widest font-bold text-stone-900 dark:text-white transition-colors duration-200">BUNONMELA</span>
+          <span class="block text-[9px] text-purple-700 dark:text-purple-300/90 tracking-wider uppercase font-semibold">Executive Atelier</span>
+        </div>
+      </a>
+
+      <!-- Central Liquid Glass Capsule Segmented Controls (Evenly Separated Options) -->
+      <nav class="hidden md:flex items-center justify-center flex-1 max-w-2xl mx-auto">
+        <div id="adminNavSegmentContainer" class="admin-segment-track relative flex items-center p-1.5 rounded-full w-full justify-between gap-1 shadow-sm">
+          
+          <!-- Moving Apple Glass Capsule Thumb (Hardware-accelerated GPU 3D translation) -->
+          <div
+            id="adminNavCapsuleThumb"
+            class="admin-capsule-thumb absolute rounded-full pointer-events-none opacity-0"
+            style="top: 0; left: 0; will-change: transform, width;"
+          ></div>
+
+          <!-- 1. Dashboard -->
+          <a
+            href="#dashboard-top"
+            data-target="dashboard-top"
+            class="admin-nav-item is-active relative z-10 flex items-center justify-center gap-2 flex-1 px-4 py-2 rounded-full text-xs font-semibold transition-colors duration-150 select-none cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+
+          <!-- 2. Orders -->
+          <a
+            href="#orders-section"
+            data-target="orders-section"
+            class="admin-nav-item relative z-10 flex items-center justify-center gap-2 flex-1 px-4 py-2 rounded-full text-xs font-semibold transition-colors duration-150 select-none cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            <span>Orders</span>
+          </a>
+
+          <!-- 3. Categories -->
+          <a
+            href="#categories-section"
+            data-target="categories-section"
+            class="admin-nav-item relative z-10 flex items-center justify-center gap-2 flex-1 px-4 py-2 rounded-full text-xs font-semibold transition-colors duration-150 select-none cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+            </svg>
+            <span>Categories</span>
+          </a>
+
+          <!-- 4. Products -->
+          <a
+            href="#products-section"
+            data-target="products-section"
+            class="admin-nav-item relative z-10 flex items-center justify-center gap-2 flex-1 px-4 py-2 rounded-full text-xs font-semibold transition-colors duration-150 select-none cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            <span>Products</span>
+          </a>
+
+          <!-- 5. Customers -->
+          <a
+            href="#users-section"
+            data-target="users-section"
+            class="admin-nav-item relative z-10 flex items-center justify-center gap-2 flex-1 px-4 py-2 rounded-full text-xs font-semibold transition-colors duration-150 select-none cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span>Customers</span>
+          </a>
+
+        </div>
+      </nav>
+
+      <!-- Right Controls: Luxury Animated Mode Switcher & Admin Profile & Capsule Logout (Evenly Spaced) -->
+      <div class="flex items-center space-x-3 sm:space-x-4 shrink-0">
+        
+        <!-- Stylish Mode Switcher (Liquid Glass Track & Sliding Glowing Thumb) -->
+        <button
+          id="adminThemeToggle"
+          type="button"
+          aria-label="Toggle dark and light mode"
+          class="mode-switcher-btn relative rounded-full transition-all duration-300 flex items-center cursor-pointer focus:outline-none shrink-0"
+          title="Switch Dark / Light Mode"
+        >
+          <!-- Background track icons (Stylish SVGs) -->
+          <div class="w-full flex items-center justify-between px-1.5 pointer-events-none">
+            <!-- Sleek Sun Icon on left -->
+            <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" stroke-width="2" />
+              <path stroke-linecap="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+            <!-- Sleek Moon & Star Icon on right -->
+            <svg class="w-3.5 h-3.5 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
+          </div>
+
+          <!-- Sliding Circle Thumb with Glowing Styled Icon -->
+          <div
+            id="modeThumb"
+            class="absolute top-[2.5px] left-[2.5px] w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center transition-transform duration-300 transform pointer-events-none"
+          >
+            <!-- Sun Icon (in light mode) -->
+            <svg id="thumbSunIcon" class="w-3.5 h-3.5 text-amber-500 transition-opacity duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" stroke-width="2" fill="currentColor" />
+              <path stroke-linecap="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+            <!-- Moon Icon (in dark mode) -->
+            <svg id="thumbMoonIcon" class="w-3.5 h-3.5 text-purple-400 hidden transition-opacity duration-200" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
+          </div>
+        </button>
+
+        <!-- Admin Profile Pill (Apple Liquid Glass) -->
+        <div class="admin-profile-pill flex items-center space-x-2 pl-2 pr-3.5 py-1.5 rounded-full text-xs shadow-sm">
+          <div class="w-5 h-5 rounded-full bg-brand-plum flex items-center justify-center font-bold text-white text-[10px] shadow-sm">
+            <%= (typeof adminUser !== 'undefined' && adminUser) ? adminUser.name.charAt(0).toUpperCase() : ((typeof currentUser !== 'undefined' && currentUser) ? currentUser.name.charAt(0).toUpperCase() : 'A') %>
+          </div>
+          <span class="hidden sm:inline font-semibold text-stone-800 dark:text-stone-200 text-xs">
+            <%= (typeof adminUser !== 'undefined' && adminUser) ? adminUser.name : ((typeof currentUser !== 'undefined' && currentUser) ? currentUser.name : 'Admin') %>
+          </span>
+        </div>
+
+        <!-- Logout Capsule Button with Apple Liquid Glass Border -->
+        <a
+          href="/auth/logout"
+          class="admin-logout-capsule flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 shadow-sm"
+          title="Sign out from executive atelier"
+        >
+          <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          <span class="hidden sm:inline">Logout</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Mobile Scrollable Liquid Glass Capsule Bar (Visible on mobile/tablet) -->
+    <div class="md:hidden pb-3 overflow-x-auto scrollbar-none flex justify-center">
+      <div id="adminMobileSegmentContainer" class="admin-segment-track relative flex items-center p-1.5 rounded-full shrink-0 gap-1 shadow-sm">
+        <div
+          id="adminMobileCapsuleThumb"
+          class="admin-capsule-thumb absolute rounded-full pointer-events-none opacity-0"
+          style="top: 0; left: 0; will-change: transform, width;"
+        ></div>
+
+        <a href="#dashboard-top" data-target="dashboard-top" class="admin-mobile-nav-item is-active relative z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-150">
+          <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#orders-section" data-target="orders-section" class="admin-mobile-nav-item relative z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-150">
+          <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span>Orders</span>
+        </a>
+        <a href="#categories-section" data-target="categories-section" class="admin-mobile-nav-item relative z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-150">
+          <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+          <span>Categories</span>
+        </a>
+        <a href="#products-section" data-target="products-section" class="admin-mobile-nav-item relative z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-150">
+          <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          <span>Products</span>
+        </a>
+        <a href="#users-section" data-target="users-section" class="admin-mobile-nav-item relative z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-150">
+          <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+          <span>Customers</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     APPLE LIQUID GLASS AESTHETICS & CAPSULE STYLING
+     ═══════════════════════════════════════════ -->
+<style>
+  /* Apple Liquid Glass Navbar Base */
+  .admin-topbar {
+    background: rgba(255, 255, 255, 0.78);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    backdrop-filter: blur(28px) saturate(190%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  html.dark .admin-topbar {
+    background: rgba(15, 15, 20, 0.82) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Segmented Track (Outer Capsule Container) */
+  .admin-segment-track {
+    background: rgba(241, 245, 249, 0.9);
+    border: 1px solid rgba(203, 213, 225, 0.85);
+    box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  html.dark .admin-segment-track {
+    background: rgba(28, 28, 35, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  /* Moving Active Capsule Thumb (Pure GPU Composited Layer) */
+  .admin-capsule-thumb {
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(59, 7, 100, 0.14), 0 1px 2px rgba(0, 0, 0, 0.06);
+    will-change: transform, width, height;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    contain: layout style;
+  }
+
+  html.dark .admin-capsule-thumb {
+    background: linear-gradient(135deg, #6b21a8 0%, #3b0764 100%) !important;
+    border: 1px solid rgba(192, 132, 252, 0.4) !important;
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.45), 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  /* Capsule Nav Items (Inactive vs Active) */
+  .admin-nav-item,
+  .admin-mobile-nav-item {
+    color: #64748b;
+  }
+
+  .admin-nav-item:hover,
+  .admin-mobile-nav-item:hover {
+    color: #0f172a;
+  }
+
+  html.dark .admin-nav-item,
+  html.dark .admin-mobile-nav-item {
+    color: #94a3b8 !important;
+  }
+
+  html.dark .admin-nav-item:hover,
+  html.dark .admin-mobile-nav-item:hover {
+    color: #f8fafc !important;
+  }
+
+  /* When Active */
+  .admin-nav-item.is-active,
+  .admin-mobile-nav-item.is-active {
+    color: #3B0764 !important;
+    font-weight: 700;
+  }
+
+  html.dark .admin-nav-item.is-active,
+  html.dark .admin-mobile-nav-item.is-active {
+    color: #ffffff !important;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  }
+
+  /* Admin Profile Pill */
+  .admin-profile-pill {
+    background: rgba(241, 245, 249, 0.85);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+  }
+
+  html.dark .admin-profile-pill {
+    background: rgba(39, 39, 42, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  /* Logout Capsule Button with Apple Liquid Glass Border */
+  .admin-logout-capsule {
+    background: rgba(241, 245, 249, 0.85);
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    color: #64748b;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .admin-logout-capsule:hover {
+    background: rgba(255, 241, 242, 0.95);
+    border-color: rgba(244, 63, 94, 0.4);
+    color: #e11d48;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(225, 29, 72, 0.12);
+  }
+
+  html.dark .admin-logout-capsule {
+    background: rgba(28, 28, 35, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #cbd5e1 !important;
+  }
+
+  html.dark .admin-logout-capsule:hover {
+    background: rgba(225, 29, 72, 0.15) !important;
+    border-color: rgba(244, 63, 94, 0.5) !important;
+    color: #fda4af !important;
+    box-shadow: 0 0 14px rgba(244, 63, 94, 0.3) !important;
+  }
+
+  /* Dark/Light Mode Switcher */
+  .mode-switcher-btn {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    height: 32px !important;
+    flex-shrink: 0 !important;
+    position: relative;
+    padding: 0 !important;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: rgba(226, 232, 240, 0.9);
+    border: 1.5px solid #cbd5e1;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  html.dark .mode-switcher-btn {
+    background: #2e1065 !important;
+    border: 1.5px solid #a855f7 !important;
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.5), inset 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+  }
+</style>
+
+<!-- ═══════════════════════════════════════════
+     DYNAMIC MOVING CAPSULE LOGIC & ZERO-LAG SCROLL SPY
+     ═══════════════════════════════════════════ -->
+<script>
+  (function() {
+    // 1. Dark / Light Theme handling
+    const htmlEl = document.documentElement;
+    const bodyEl = document.body;
+
+    function applyAdminTheme(theme) {
+      const thumb = document.getElementById('modeThumb');
+      const sunIcon = document.getElementById('thumbSunIcon');
+      const moonIcon = document.getElementById('thumbMoonIcon');
+
+      if (theme === 'dark') {
+        htmlEl.classList.add('dark');
+        bodyEl.classList.add('admin-dark');
+        if (thumb) {
+          thumb.style.transform = 'translateX(28px)';
+          thumb.style.backgroundColor = '#18181b';
+        }
+        if (sunIcon) sunIcon.classList.add('hidden');
+        if (moonIcon) moonIcon.classList.remove('hidden');
+      } else {
+        htmlEl.classList.remove('dark');
+        bodyEl.classList.remove('admin-dark');
+        if (thumb) {
+          thumb.style.transform = 'translateX(0px)';
+          thumb.style.backgroundColor = '#ffffff';
+        }
+        if (sunIcon) sunIcon.classList.remove('hidden');
+        if (moonIcon) moonIcon.classList.add('hidden');
+      }
+    }
+
+    const savedTheme = localStorage.getItem('bunonmela_admin_theme') || 'light';
+    applyAdminTheme(savedTheme);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      applyAdminTheme(localStorage.getItem('bunonmela_admin_theme') || 'light');
+      
+      const toggleBtn = document.getElementById('adminThemeToggle');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const current = localStorage.getItem('bunonmela_admin_theme') || 'light';
+          const next = current === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('bunonmela_admin_theme', next);
+          applyAdminTheme(next);
+        });
+      }
+
+      // ═══════════════════════════════════════════
+      // 2. BUTTERY-SMOOTH CAPSULE TRACKER (120fps GPU-only)
+      // Uses translate3d for composited-layer animation, no layout thrashing
+      // ═══════════════════════════════════════════
+      const CAPSULE_TRANSITION = 'transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.2s ease, opacity 0.15s ease';
+
+      function setupCapsuleTracker(containerId, thumbId, itemSelector) {
+        const container = document.getElementById(containerId);
+        const thumb = document.getElementById(thumbId);
+        if (!container || !thumb) return null;
+
+        const items = container.querySelectorAll(itemSelector);
+        if (!items.length) return null;
+
+        let activeItem = container.querySelector(itemSelector + '.is-active') || items[0];
+        let rafId = null;
+
+        function moveCapsuleTo(targetItem, animate = true) {
+          if (!targetItem || targetItem === activeItem && thumb.style.opacity === '1') return;
+          activeItem = targetItem;
+
+          // Update active classes
+          items.forEach(el => el.classList.remove('is-active'));
+          targetItem.classList.add('is-active');
+
+          // Cancel any pending rAF to prevent stacking
+          if (rafId) cancelAnimationFrame(rafId);
+
+          rafId = requestAnimationFrame(() => {
+            // Single layout read — batched
+            const cRect = container.getBoundingClientRect();
+            const tRect = targetItem.getBoundingClientRect();
+
+            const left = tRect.left - cRect.left;
+            const top = tRect.top - cRect.top;
+            const width = tRect.width;
+            const height = tRect.height;
+
+            // Single write phase — all style mutations together
+            thumb.style.transition = animate ? CAPSULE_TRANSITION : 'none';
+            thumb.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+            thumb.style.width = `${width}px`;
+            thumb.style.height = `${height}px`;
+            thumb.style.opacity = '1';
+            rafId = null;
+          });
+        }
+
+        // Initialize position on load (no animation)
+        requestAnimationFrame(() => {
+          moveCapsuleTo(activeItem, false);
+        });
+
+        // Click listeners on each option
+        items.forEach(item => {
+          item.addEventListener('click', (e) => {
+            const targetId = item.getAttribute('data-target');
+            if (targetId) {
+              e.preventDefault();
+              moveCapsuleTo(item, true);
+
+              // Sync desktop <-> mobile
+              if (containerId === 'adminNavSegmentContainer') {
+                const mobileTarget = document.querySelector(`.admin-mobile-nav-item[data-target="${targetId}"]`);
+                if (mobileTarget && window.moveMobileCapsule) window.moveMobileCapsule(mobileTarget);
+              } else {
+                const desktopTarget = document.querySelector(`.admin-nav-item[data-target="${targetId}"]`);
+                if (desktopTarget && window.moveDesktopCapsule) window.moveDesktopCapsule(desktopTarget);
+              }
+
+              // Smooth scroll to destination with offset
+              const targetEl = document.getElementById(targetId);
+              if (targetEl) {
+                const topOffset = targetEl.getBoundingClientRect().top + window.pageYOffset - 85;
+                window.scrollTo({
+                  top: Math.max(0, topOffset),
+                  behavior: 'smooth'
+                });
+                history.replaceState(null, null, '#' + targetId);
+              }
+            }
+          });
+        });
+
+        // Recalculate on window resize (debounced)
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+          if (resizeTimer) clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => {
+            if (activeItem) moveCapsuleTo(activeItem, false);
+          }, 100);
+        });
+
+        return { moveCapsuleTo, items };
+      }
+
+      // Initialize Desktop & Mobile Trackers
+      const desktopTracker = setupCapsuleTracker('adminNavSegmentContainer', 'adminNavCapsuleThumb', '.admin-nav-item');
+      const mobileTracker = setupCapsuleTracker('adminMobileSegmentContainer', 'adminMobileCapsuleThumb', '.admin-mobile-nav-item');
+
+      if (desktopTracker) window.moveDesktopCapsule = desktopTracker.moveCapsuleTo;
+      if (mobileTracker) window.moveMobileCapsule = mobileTracker.moveCapsuleTo;
+
+      // ═══════════════════════════════════════════
+      // 3. SCROLL SPY (Throttled with rAF — zero-jank)
+      // Only fires once per frame, caches section offsets
+      // ═══════════════════════════════════════════
+      const sectionIds = [
+        'dashboard-top',
+        'orders-section',
+        'categories-section',
+        'products-section',
+        'users-section'
+      ];
+
+      let scrollTicking = false;
+      let lastKnownSection = 'dashboard-top';
+
+      function updateScrollSpy() {
+        const scrollY = window.pageYOffset + 140;
+        let currentSectionId = 'dashboard-top';
+
+        for (let i = 0; i < sectionIds.length; i++) {
+          const el = document.getElementById(sectionIds[i]);
+          if (el && scrollY >= el.offsetTop) {
+            currentSectionId = sectionIds[i];
+          }
+        }
+
+        // Only update if section actually changed
+        if (currentSectionId !== lastKnownSection) {
+          lastKnownSection = currentSectionId;
+
+          const dItem = document.querySelector(`.admin-nav-item[data-target="${currentSectionId}"]`);
+          if (dItem && !dItem.classList.contains('is-active') && desktopTracker) {
+            desktopTracker.moveCapsuleTo(dItem, true);
+          }
+
+          const mItem = document.querySelector(`.admin-mobile-nav-item[data-target="${currentSectionId}"]`);
+          if (mItem && !mItem.classList.contains('is-active') && mobileTracker) {
+            mobileTracker.moveCapsuleTo(mItem, true);
+          }
+        }
+
+        scrollTicking = false;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!scrollTicking) {
+          requestAnimationFrame(updateScrollSpy);
+          scrollTicking = true;
+        }
+      }, { passive: true });
+
+      // Handle initial hash in URL if present
+      if (window.location.hash) {
+        const hashTarget = window.location.hash.replace('#', '');
+        const initialDItem = document.querySelector(`.admin-nav-item[data-target="${hashTarget}"]`);
+        if (initialDItem && desktopTracker) {
+          desktopTracker.moveCapsuleTo(initialDItem, false);
+        }
+        const initialMItem = document.querySelector(`.admin-mobile-nav-item[data-target="${hashTarget}"]`);
+        if (initialMItem && mobileTracker) {
+          mobileTracker.moveCapsuleTo(initialMItem, false);
+        }
+      }
+    });
+  })();
+</script>
