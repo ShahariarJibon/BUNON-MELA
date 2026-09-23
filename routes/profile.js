@@ -15,7 +15,7 @@ router.get('/', requireAuth, (req, res) => {
   const userId = req.session.user.id;
 
   // 1. Fetch user profile
-  db.get('SELECT id, name, email, role, created_at FROM Users WHERE id = ?', [userId], (userErr, user) => {
+  db.get('SELECT id, name, email, phone, role, created_at FROM Users WHERE id = ?', [userId], (userErr, user) => {
     if (userErr || !user) {
       return res.redirect('/auth/login');
     }

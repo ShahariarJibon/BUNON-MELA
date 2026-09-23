@@ -92,16 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Add to Cart Click (Strictly requires sign in / sign up)
+  // Add to Cart Click (Directly adds to cart without requiring prior login)
   if (btnAddToCart) {
     btnAddToCart.addEventListener('click', async () => {
-      const isLogged = window.isUserLoggedIn === true;
       const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
-
-      if (!isLogged) {
-        openAuthModal('add_cart');
-        return;
-      }
 
       try {
         btnAddToCart.disabled = true;
@@ -121,11 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json();
 
-        if (res.status === 401 || data.requireAuth) {
-          openAuthModal('add_cart');
-          return;
-        }
-
         if (data.success) {
           showToast('Added to Shopping Bag', `${qty} piece(s) added successfully.`);
           // Update navbar cart badge
@@ -144,16 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Buy Now Click (Strictly requires sign in / sign up, then proceeds to checkout)
+  // Buy Now Click (Directly proceeds to checkout)
   if (btnBuyNow) {
     btnBuyNow.addEventListener('click', async () => {
-      const isLogged = window.isUserLoggedIn === true;
       const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
-
-      if (!isLogged) {
-        openAuthModal('buy_now');
-        return;
-      }
 
       try {
         btnBuyNow.disabled = true;
@@ -173,11 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const data = await res.json();
-        if (res.status === 401 || data.requireAuth) {
-          openAuthModal('buy_now');
-          return;
-        }
-
         if (data.redirect) {
           window.location.href = data.redirect;
         } else {

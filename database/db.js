@@ -106,9 +106,13 @@ function initDatabase() {
       else console.log('✅ Orders table ready');
     });
 
-    // Ensure delivery_charge and coupon_code exist in existing SQLite DB
+    // Ensure delivery_charge, coupon_code and customer_email exist in existing SQLite DB
     db.run(`ALTER TABLE Orders ADD COLUMN delivery_charge REAL DEFAULT 0`, () => {});
     db.run(`ALTER TABLE Orders ADD COLUMN coupon_code TEXT`, () => {});
+    db.run(`ALTER TABLE Orders ADD COLUMN customer_email TEXT`, () => {});
+
+    // Ensure phone column exists in Users table
+    db.run(`ALTER TABLE Users ADD COLUMN phone TEXT`, () => {});
 
     // Coupons table (Free delivery promotional codes)
     db.run(`CREATE TABLE IF NOT EXISTS Coupons (

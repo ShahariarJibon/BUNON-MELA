@@ -110,7 +110,7 @@ router.post('/login', (req, res) => {
   if (!email || !password) {
     return res.render('auth/login', {
       title: 'Sign In | Bunonmela',
-      error: 'Please enter both email and password.',
+      error: 'Please enter your mobile number (or email) and password.',
       redirect: redirect || '',
       action: action || '',
       productId: productId || '',
@@ -118,24 +118,19 @@ router.post('/login', (req, res) => {
     });
   }
 
-  db.get('SELECT * FROM Users WHERE email = ?', [email.trim().toLowerCase()], async (err, user) => {
-    if (err || !user) {
-      return res.render('auth/login', {
-        title: 'Sign In | Bunonmela',
-        error: 'Invalid email or password.',
-        redirect: redirect || '',
-        action: action || '',
-        productId: productId || '',
-        quantity: quantity || '1'
-      });
-    }
+  const identifier = (email || '').trim().toLowerCase();
+  let cleanPhone = identifier.replace(/[\s\-\(\)]/g, '');
+  if (cleanPhone.startsWith('+88')) cleanPhone = cleanPhone.slice(3);
+  if (cleanPhone.startsWith('88')) cleanPhone = cleanPhone.slice(2);
 
-    try {
-      const match = await bcrypt.compare(password, user.password);
-      if (!match) {
+  db.get(
+    'SELECT * FROM Users WHERE email = ? OR phone = ? OR phone = ?',
+    [identifier, identifier, cleanPhone],
+    async (err, user) => {
+      if (err || !user) {
         return res.render('auth/login', {
           title: 'Sign In | Bunonmela',
-          error: 'Invalid email or password.',
+          error: 'Invalid credentials. Please verify your mobile number/email and password.',
           redirect: redirect || '',
           action: action || '',
           productId: productId || '',
@@ -143,49 +138,66 @@ router.post('/login', (req, res) => {
         });
       }
 
-      // If user is admin
-      if (user.role === 'admin') {
-        req.session.adminUser = {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: 'admin'
-        };
+      try {
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+          return res.render('auth/login', {
+            title: 'Sign In | Bunonmela',
+            error: 'Invalid password. Please try again.',
+            redirect: redirect || '',
+            action: action || '',
+            productId: productId || '',
+            quantity: quantity || '1'
+          });
+        }
+
+        // If user is admin
+        if (user.role === 'admin') {
+          req.session.adminUser = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || null,
+            role: 'admin'
+          };
+          req.session.user = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || null,
+            role: 'admin'
+          };
+          const dest = (redirect && redirect.startsWith('/admin')) ? redirect : '/admin';
+          return res.redirect(dest);
+        }
+
+        // If user is customer
         req.session.user = {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: 'admin'
+          phone: user.phone || null,
+          role: user.role
         };
-        const dest = (redirect && redirect.startsWith('/admin')) ? redirect : '/admin';
-        return res.redirect(dest);
+
+        let safeRedirect = redirect;
+        if (safeRedirect && safeRedirect.startsWith('/admin')) {
+          safeRedirect = '/';
+        }
+
+        handlePostAuthAction(user.id, req, res, safeRedirect || '/');
+      } catch (e) {
+        res.render('auth/login', {
+          title: 'Sign In | Bunonmela',
+          error: 'Server error. Please try again.',
+          redirect: redirect || '',
+          action: action || '',
+          productId: productId || '',
+          quantity: quantity || '1'
+        });
       }
-
-      // If user is customer
-      req.session.user = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      };
-
-      let safeRedirect = redirect;
-      if (safeRedirect && safeRedirect.startsWith('/admin')) {
-        safeRedirect = '/';
-      }
-
-      handlePostAuthAction(user.id, req, res, safeRedirect || '/');
-    } catch (e) {
-      res.render('auth/login', {
-        title: 'Sign In | Bunonmela',
-        error: 'Server error. Please try again.',
-        redirect: redirect || '',
-        action: action || '',
-        productId: productId || '',
-        quantity: quantity || '1'
-      });
     }
-  });
+  );
 });
 
 // GET /auth/signup
@@ -213,9 +225,9 @@ router.get('/signup', (req, res) => {
   });
 });
 
-// POST /auth/signup
+// POST /auth/signup (Mobile-first account creation, email is optional)
 router.post('/signup', async (req, res) => {
-  const { name, email, password, confirmPassword, redirect, action, productId, quantity } = req.body;
+  const { name, phone, email, password, confirmPassword, redirect, action, productId, quantity } = req.body;
 
   const renderError = (msg) => {
     return res.render('auth/signup', {
@@ -228,8 +240,17 @@ router.post('/signup', async (req, res) => {
     });
   };
 
-  if (!name || !email || !password) {
-    return renderError('All fields are required.');
+  if (!name || !phone || !password) {
+    return renderError('Name, mobile number, and password are required.');
+  }
+
+  // Validate 11-digit BD mobile
+  let cleanPhone = (phone || '').trim().replace(/[\s\-\(\)]/g, '');
+  if (cleanPhone.startsWith('+88')) cleanPhone = cleanPhone.slice(3);
+  if (cleanPhone.startsWith('88')) cleanPhone = cleanPhone.slice(2);
+  const bdPhoneRegex = /^01[3-9]\d{8}$/;
+  if (!bdPhoneRegex.test(cleanPhone)) {
+    return renderError('Please enter a valid 11-digit Bangladeshi mobile number (013-019).');
   }
 
   if (password !== confirmPassword) {
@@ -240,38 +261,49 @@ router.post('/signup', async (req, res) => {
     return renderError('Password must be at least 6 characters.');
   }
 
-  // Check if email exists in SQLite
-  db.get('SELECT id FROM Users WHERE email = ?', [email.trim().toLowerCase()], async (err, existing) => {
-    if (existing) {
-      return renderError('An account with this email already exists. Please sign in with your password.');
+  // Check if mobile number already exists in SQLite
+  db.get('SELECT id FROM Users WHERE phone = ?', [cleanPhone], async (err, existingPhone) => {
+    if (existingPhone) {
+      return renderError('An account with this mobile number already exists. Please sign in.');
     }
 
-    try {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      db.run(
-        'INSERT INTO Users (name, email, password, role) VALUES (?, ?, ?, ?)',
-        [name.trim(), email.trim().toLowerCase(), hashedPassword, 'customer'],
-        function (err) {
-          if (err) {
-            return renderError('Could not create account. Please try again.');
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const finalEmail = cleanEmail || `${cleanPhone}@bunonmela.customer`;
+
+    // Check if email already used
+    db.get('SELECT id FROM Users WHERE email = ?', [finalEmail], async (eErr, existingEmail) => {
+      if (existingEmail && cleanEmail) {
+        return renderError('An account with this email address already exists. Please sign in or use another email.');
+      }
+
+      try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        db.run(
+          'INSERT INTO Users (name, email, phone, password, role) VALUES (?, ?, ?, ?, ?)',
+          [name.trim(), finalEmail, cleanPhone, hashedPassword, 'customer'],
+          function (insErr) {
+            if (insErr) {
+              return renderError('Could not create account. Please try again.');
+            }
+
+            const newUserId = this.lastID;
+
+            // Auto-login after signup
+            req.session.user = {
+              id: newUserId,
+              name: name.trim(),
+              phone: cleanPhone,
+              email: finalEmail,
+              role: 'customer'
+            };
+
+            handlePostAuthAction(newUserId, req, res, '/');
           }
-
-          const newUserId = this.lastID;
-
-          // Auto-login after signup
-          req.session.user = {
-            id: newUserId,
-            name: name.trim(),
-            email: email.trim().toLowerCase(),
-            role: 'customer'
-          };
-
-          handlePostAuthAction(newUserId, req, res, '/');
-        }
-      );
-    } catch (e) {
-      renderError('Server error. Please try again.');
-    }
+        );
+      } catch (e) {
+        renderError('Server error. Please try again.');
+      }
+    });
   });
 });
 

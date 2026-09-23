@@ -111,8 +111,12 @@
       <p class="text-stone-800 font-medium leading-relaxed">
         <%= order.delivery_address %>
       </p>
-      <div class="flex items-center gap-4 text-stone-500 pt-1 text-[11px]">
+      <div class="flex items-center gap-4 text-stone-500 pt-1 text-[11px] flex-wrap">
         <span>Contact: <strong class="text-stone-700">+88 <%= order.customer_phone %></strong></span>
+        <% if (order.customer_email) { %>
+          <span>•</span>
+          <span>Email: <strong class="text-stone-700"><%= order.customer_email %></strong></span>
+        <% } %>
         <span>•</span>
         <span>Estimated Handover: <strong class="text-stone-700">Within 24-48 Hours</strong></span>
       </div>
